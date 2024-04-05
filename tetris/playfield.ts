@@ -8,15 +8,14 @@ type Position = { row: number; col: number };
 type Tetrimino = {
   color: string;
   size: number;
-  origin: PositionID;
-  positions: Set<PositionID>;
+  origin: Position;
+  positions: Set<Position>;
 };
 
+type Block = string;
+
 type Playfield = {
-  height: number; // 20
-  width: number; // 10
-  positions: Set<PositionID>;
-  colors: Map<PositionID, string>;
+  board: Array<Array<Maybe<Block>>>;
   piece: Tetrimino;
 };
 
@@ -28,7 +27,9 @@ type Game = {
   status: "playing" | "paused" | "gameover" | "scoring";
 };
 
-// const Identity = <T>(a: T): T => a;
+const Identity = <T>(a: T): T => a;
+const False = () => false;
+const True = () => true;
 
 export const Positions = {
   ORIGIN: { row: 0, col: 0 },
@@ -47,8 +48,8 @@ export const Positions = {
       col: a.col + b.col,
     }),
 
-  hasOverlap: (a: Set<PositionID>) => (b: Set<PositionID>) =>
-    Array.from(a).some((pos) => b.has(pos)),
+  // hasOverlap: (a: Set<PositionID>) => (b: Set<PositionID>) =>
+  //   Array.from(a).some((pos) => b.has(pos)),
 
   listFromSet: (p: Set<PositionID>) => Array.from(p, Positions.fromID),
 
@@ -70,7 +71,7 @@ export class TetriminoFactory {
   constructor(size: number, color: string) {
     this.value = {
       size,
-      origin: Positions.toID(Positions.ORIGIN),
+      origin: Positions.ORIGIN,
       color,
       positions: new Set(),
     };
@@ -82,17 +83,17 @@ export class TetriminoFactory {
     return new TetriminoFactory(tetrimono.size, tetrimono.color);
   }
   withPosition = (p: Position) => {
-    this.value.positions.add(Positions.toID(p));
+    this.value.positions.add(p);
     return this;
   };
   withPositionsList = (p: Array<Position>) => {
-    this.value.positions = Free.of(p.map(Positions.toID))
+    this.value.positions = Free.of(p)
       .map((list) => new Set(list))
       .run();
     return this;
   };
   withOrigin = (p: Position) => {
-    this.value.origin = Positions.toID(p);
+    this.value.origin = p;
     return this;
   };
   create() {
@@ -157,25 +158,17 @@ export const Tetriminos = {
 
       const factory = TetriminoFactory.of(piece.size, piece.color);
 
-      Free.of(piece.origin)
-        .map(Positions.fromID)
-        .map(moveDiff)
-        .map(factory.withOrigin)
-        .run();
+      Free.of(piece.origin).map(moveDiff).map(factory.withOrigin).run();
 
       piece.positions.forEach((pos) =>
-        Free.of(pos)
-          .map(Positions.fromID)
-          .map(moveDiff)
-          .map(factory.withPosition)
-          .run()
+        Free.of(pos).map(moveDiff).map(factory.withPosition).run()
       );
 
       return factory.create();
     },
   reverseClockwise: (piece: Tetrimino) =>
     Free.of(piece.positions)
-      .map((p) => Array.from(p, Positions.fromID))
+      .map((p) => Array.from(p))
       .map((positions) => ({
         positions,
         flip: Positions.flipReverseClockwise(piece.size),
@@ -187,7 +180,7 @@ export const Tetriminos = {
       .run(),
   clockwise: (piece: Tetrimino) =>
     Free.of(piece.positions)
-      .map((p) => Array.from(p, Positions.fromID))
+      .map((p) => Array.from(p))
       .map((positions) => ({
         positions,
         flip: Positions.flipClockwise(piece.size),
@@ -205,28 +198,62 @@ const Moves = {
   left: Tetriminos.move({ row: 0, col: -1 }),
 };
 
-const Playfields = {
-  create:
-    (height: number, width: number) =>
-    (piece: Tetrimino): Playfield => ({
-      height,
-      width,
-      positions: new Set(),
-      colors: new Map(),
+class PlayFieldFactory {
+  private value: Playfield;
+  constructor(value: Playfield) {
+    this.value = value;
+  }
+  static of(playfield: Playfield) {
+    return new PlayFieldFactory(playfield);
+  }
+  static create(size: Position, piece: Tetrimino) {
+    return new PlayFieldFactory({
+      board: Array.from({ length: size.col }, () =>
+        Array.from({ length: size.row }, () => Maybe.none())
+      ),
       piece,
-    }),
-  updatePiece:
-    (playfield: Playfield) =>
-    (piece: Tetrimino): Playfield => ({ ...playfield, piece }),
-  mergePiece: (playfield: Playfield): Playfield => {
-    const positions = new Set(playfield.positions);
-    const colors = new Map(playfield.colors);
-    playfield.piece.positions.forEach((pos) => {
-      positions.add(pos);
-      colors.set(pos, playfield.piece.color);
     });
-    return { ...playfield, positions, colors };
-  },
+  }
+  updatePosition(position: Position, value: Maybe<Block>) {
+    this.value.board = this.value.board.map((col) => col.concat());
+    this.value.board[position.col][position.row] = value;
+    return this;
+  }
+  withPiece(piece: Tetrimino) {
+    this.value.piece = piece;
+    return this;
+  }
+  cleanLines(lines: Array<number>) {
+    const filler: Maybe<string>[] = Array.from({ length: lines.length }, () =>
+      Maybe.none()
+    );
+
+    const matchingLine = <T>(_r: T, index: number) =>
+      lines.some((line) => line === index);
+
+    this.value.board = this.value.board.map((column) =>
+      Free.of(column.concat())
+        .map((c) => c.filter(matchingLine))
+        .map((c) => c.concat(filler))
+        .run()
+    );
+
+    return this;
+  }
+  merge() {
+    const block = Maybe.of(this.value.piece.color);
+    this.value.piece.positions.forEach((p) => {
+      this.updatePosition(p, block);
+    });
+    return this;
+  }
+  create() {
+    return this.value;
+  }
+}
+
+const Playfields = {
+  width: (playfield: Playfield): number => playfield.board[0].length,
   addPiece:
     (piece: Tetrimino) =>
     (playfield: Playfield): Playfield =>
@@ -234,65 +261,43 @@ const Playfields = {
         .map(
           Tetriminos.move({
             row: 0,
-            col: Math.floor(playfield.width / 2) - piece.size / 2,
+            col: Math.floor(playfield.board.length / 2) - piece.size / 2,
           })
         )
-        .map(Playfields.updatePiece(playfield))
+        .map((piece) =>
+          PlayFieldFactory.of(playfield).withPiece(piece).create()
+        )
         .run(),
+  isLineComplete:
+    (playfield: Playfield) =>
+    (line: number): boolean =>
+      playfield.board.every((col) =>
+        col[line].fold({
+          onSome: () => true,
+          onNone: () => false,
+        })
+      ),
+  spaceOverlook:
+    (playfield: Playfield) =>
+    (position: Position): boolean =>
+      Maybe.of(playfield.board[position.col][position.row])
+        .flatMap((p) => p)
+        .fold({
+          onNone: False,
+          onSome: True,
+        }),
   findCompleteLines: (playfield: Playfield) =>
-    Free.of(playfield.positions)
-      .map((positions) => Array.from(positions, Positions.fromID))
-      .map((positions) =>
-        positions.reduce(
-          (byRow, pos) =>
-            byRow.set(
-              pos.row,
-              Maybe.of(byRow.get(pos.row))
-                .map((x) => x + 1)
-                .getValue(1)
-            ),
-          {} as Map<number, number>
-        )
-      )
-      .map((byRow) =>
-        Object.entries(byRow)
-          .filter(([_, count]) => count === playfield.width)
-          .map(([row]) => Number(row))
-      )
+    Free.of(playfield.board[0].length)
+      .map((maxRow) => ({
+        rows: Array.from({ length: maxRow }, (_, i) => i),
+        isComplete: Playfields.isLineComplete(playfield),
+      }))
+      .map((context) => context.rows.filter(context.isComplete))
       .run(),
-  filterLine:
-    (row: number) =>
-    (playfield: Playfield): Playfield =>
-      Free.of(playfield.positions)
-        .map((p) => Array.from(p))
-        .map((pos) =>
-          pos.reduce(
-            (acc, p): Pick<Playfield, "positions" | "colors"> =>
-              Free.of(p)
-                .map(Positions.fromID)
-                .map((id) => {
-                  if (id.row === row) {
-                    acc.positions.delete(p);
-                    acc.colors.delete(p);
-                  }
-                  return acc;
-                })
-                .run(),
-            {
-              positions: new Set(playfield.positions),
-              colors: new Map(playfield.colors),
-            }
-          )
-        )
-        .map(({ positions, colors }) =>
-          PlayFieldFactory.of(playfield)
-            .withPositions(positions)
-            .withColors(colors)
-            .create()
-        )
-        .run(),
-  consolidatePieces: (playfield: Playfield): Playfield =>
-    Free.of(playfield).run(),
+  // cleanLines:
+  //   (rows: Array<number>) =>
+  //   (playfield: Playfield): Playfield =>
+  //     PlayFieldFactory.of(playfield).cleanLines(rows).create(),
 };
 
 export const movePiece =
@@ -300,11 +305,7 @@ export const movePiece =
   (piece: Tetrimino): Tetrimino => {
     const factory = TetriminoFactory.of(piece.size, piece.color);
     piece.positions.forEach((pos) => {
-      Free.of(pos)
-        .map(Positions.fromID)
-        .map(Positions.add(diff))
-        .map(factory.withPosition)
-        .run();
+      Free.of(pos).map(Positions.add(diff)).map(factory.withPosition).run();
     });
     return factory.create();
   };
@@ -313,11 +314,10 @@ const MoveValidation = {
   operation: createOperation<Playfield, "touch" | "boundaries">(),
 
   withinLateralBoundaries: (playfield: Playfield) =>
-    Free.of(playfield.width)
-      .map(Positions.withinLateralBoundaries)
-      .map((validateBoundaries) => ({
-        validateBoundaries,
-        positions: Array.from(playfield.piece.positions, Positions.fromID),
+    Free.of(Playfields.width(playfield))
+      .map((width) => ({
+        validateBoundaries: Positions.withinLateralBoundaries(width),
+        positions: Array.from(playfield.piece.positions),
       }))
       .map(({ validateBoundaries, positions }) =>
         positions.every(validateBoundaries)
@@ -327,8 +327,11 @@ const MoveValidation = {
       .run(),
 
   overlap: (playfield: Playfield) =>
-    Free.of(playfield.piece.positions)
-      .map(Positions.hasOverlap(playfield.positions))
+    Free.of({
+      positions: Array.from(playfield.piece.positions),
+      hasOverlapping: Playfields.spaceOverlook(playfield),
+    })
+      .map((context) => !!context.positions.find(context.hasOverlapping))
       .map((hasOverlap) =>
         hasOverlap
           ? MoveValidation.operation.failure("touch")
@@ -337,7 +340,7 @@ const MoveValidation = {
       .run(),
   ground: (playfield: Playfield) =>
     Free.of(playfield.piece.positions)
-      .map((positions) => Array.from(positions, Positions.fromID))
+      .map((positions) => Array.from(positions))
       .map((positions) => positions.find(Positions.grounded))
       .map((groundedPosition) =>
         !groundedPosition
@@ -359,31 +362,8 @@ const MoveValidation = {
       .flatMap(MoveValidation.overlap),
 };
 
-class PlayFieldFactory {
-  value: Playfield;
-  constructor(value: Playfield) {
-    this.value = value;
-  }
-  static of(playfield: Playfield) {
-    return new PlayFieldFactory({
-      ...playfield,
-    });
-  }
-  withPositions(positions: Playfield["positions"]) {
-    this.value.positions = positions;
-    return this;
-  }
-  withColors(colors: Playfield["colors"]) {
-    this.value.colors = colors;
-    return this;
-  }
-  create() {
-    return this.value;
-  }
-}
-
 class GameFactory {
-  value: Game;
+  private value: Game;
   constructor(game: Game) {
     this.value = game;
   }
@@ -452,6 +432,8 @@ const Games = {
         return 0;
     }
   },
+  score: (level: number) => (lines: number) =>
+    level * Games.scoreFromLines(lines),
 };
 
 const Flows = {
@@ -460,7 +442,9 @@ const Flows = {
     (game: Game): Game =>
       Free.of(game.playfield.piece)
         .map(move === "left" ? Moves.left : Moves.right)
-        .map(Playfields.updatePiece(game.playfield))
+        .map((piece) =>
+          PlayFieldFactory.of(game.playfield).withPiece(piece).create()
+        )
         .map(MoveValidation.validateLateralPosition)
         .map((operation) =>
           operation.fold({
@@ -472,7 +456,7 @@ const Flows = {
   dropPiece: (playfield: Playfield): Playfield =>
     Free.of(playfield.piece)
       .map(Moves.down)
-      .map(Playfields.updatePiece(playfield))
+      .map((piece) => PlayFieldFactory.of(playfield).withPiece(piece).create())
       .map(MoveValidation.validateTickPosition)
       .map((operation) =>
         operation.fold({
@@ -490,21 +474,23 @@ const Flows = {
             ? Tetriminos.clockwise
             : Tetriminos.reverseClockwise
         )
-        .map(Playfields.updatePiece(game.playfield))
+        .map((piece) =>
+          PlayFieldFactory.of(game.playfield).withPiece(piece).create()
+        )
         .map(Games.updatePlayfield(game))
         .run(),
-  cleanLines:
-    (lines: Array<number>) =>
-    (playfield: Playfield): Playfield =>
-      Free.of(
-        lines.reduce(
-          (acc, row) => Free.of(acc).map(Playfields.filterLine(row)).run(),
-          playfield
-        )
-      )
-        // .map(Playfields.dropLines(lines.length))
-        // .map()
-        .run(),
+  // cleanLines:
+  //   (lines: Array<number>) =>
+  //   (playfield: Playfield): Playfield =>
+  //     Free.of(
+  //       lines.reduce(
+  //         (acc, row) => Free.of(acc).map(Playfields.filterLine(row)).run(),
+  //         playfield
+  //       )
+  //     )
+  //       // .map(Playfields.dropLines(lines.length))
+  //       // .map()
+  //       .run(),
 
   getRandomTetrimono() {
     let randomPiece = Free.of(Tetriminos.patterns)
@@ -530,17 +516,17 @@ export const Actions = {
   rotate: Flows.rotate("clock"),
   rotateReverse: Flows.rotate("reverse"),
   createGame:
-    (size: { height: number; width: number }) =>
+    (size: { row: number; col: number }) =>
     (piece: Tetrimino) =>
     (nextPiece: Tetrimino) =>
       Free.of(piece)
         .map(
           Tetriminos.move({
             row: 0,
-            col: Math.floor(size.width / 2) - piece.size / 2,
+            col: Math.floor(size.col / 2) - piece.size / 2,
           })
         )
-        .map(Playfields.create(size.height, size.width))
+        .map((movedPiece) => PlayFieldFactory.create(size, movedPiece).create())
         .map((playfield) =>
           GameFactory.fromPlayfield(playfield).withNextPiece(nextPiece).create()
         )
@@ -549,13 +535,17 @@ export const Actions = {
   nextTick: (game: Game): Game =>
     Free.of(game.playfield.piece)
       .map(Moves.down)
-      .map(Playfields.updatePiece(game.playfield))
+      .map((piece) =>
+        PlayFieldFactory.of(game.playfield).withPiece(piece).create()
+      )
       .map((p) =>
         MoveValidation.validateTickPosition(p).fold({
           success: Games.updatePlayfield(game),
           failure: () =>
             Free.of(game.playfield)
-              .map(Playfields.mergePiece)
+              .map((playfield) =>
+                PlayFieldFactory.of(playfield).merge().create()
+              )
               .map(Games.updatePlayfield(game))
               .map(Games.updateStatus("scoring"))
               .run(),
@@ -566,8 +556,10 @@ export const Actions = {
     Free.of(game.playfield)
       .map(Playfields.findCompleteLines)
       .map((lines) => ({
-        score: game.level * Games.scoreFromLines(lines.length),
-        playfield: Free.of(game.playfield).map(Flows.cleanLines(lines)).run(),
+        score: Games.score(game.level)(lines.length),
+        playfield: PlayFieldFactory.of(game.playfield)
+          .cleanLines(lines)
+          .create(),
       }))
       .map(({ score, playfield }) =>
         GameFactory.fromGame(game)
@@ -580,7 +572,7 @@ export const Actions = {
     (pieceProvider: () => Tetrimino) =>
     (game: Game): Game =>
       Free.of(game.playfield)
-        .map(Playfields.mergePiece)
+        .map((playfield) => PlayFieldFactory.of(playfield).merge().create())
         // TODO: score and remove lines
         // - status: playing
         // - nextPiece: provider
