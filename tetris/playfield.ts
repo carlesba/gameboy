@@ -214,13 +214,33 @@ class PlayFieldFactory {
       piece,
     });
   }
+  width() {
+    return this.value.board.length;
+  }
+  height() {
+    return this.value.board[0].length;
+  }
+  introducePiece(piece: Tetrimino) {
+    const centeredPiece = Free.of(piece)
+      .map(
+        Tetriminos.move({
+          row: 0,
+          col: Math.floor(this.value.board.length / 2) - piece.size / 2,
+        })
+      )
+      .run();
+
+    this.withPiece(centeredPiece);
+
+    return this;
+  }
   updatePosition(position: Position, value: Maybe<Block>) {
     this.value.board = this.value.board.map((col) => col.concat());
     this.value.board[position.col][position.row] = value;
     return this;
   }
   withPiece(piece: Tetrimino) {
-    this.value.piece = piece;
+    this.value = { ...this.value, piece };
     return this;
   }
   cleanLines(lines: Array<number>) {
@@ -247,58 +267,84 @@ class PlayFieldFactory {
     });
     return this;
   }
+  isLineComplete(line: number) {
+    return this.value.board.every((col) =>
+      col[line].fold({
+        onSome: () => true,
+        onNone: () => false,
+      })
+    );
+  }
+  isPositionTaken(position: Position) {
+    return Maybe.of(this.value.board[position.col][position.col])
+      .flatMap((m) => m)
+      .fold({
+        onSome: True,
+        onNone: False,
+      });
+  }
+  findCompleteLines() {
+    return Array.from({ length: this.height() }, (_, i) => i).filter((line) =>
+      this.isLineComplete(line)
+    );
+  }
+  pieceOverlaps() {
+    return Array.from(this.value.piece.positions).some((position) =>
+      this.isPositionTaken(position)
+    );
+  }
   create() {
     return this.value;
   }
 }
 
-const Playfields = {
-  width: (playfield: Playfield): number => playfield.board[0].length,
-  addPiece:
-    (piece: Tetrimino) =>
-    (playfield: Playfield): Playfield =>
-      Free.of(piece)
-        .map(
-          Tetriminos.move({
-            row: 0,
-            col: Math.floor(playfield.board.length / 2) - piece.size / 2,
-          })
-        )
-        .map((piece) =>
-          PlayFieldFactory.of(playfield).withPiece(piece).create()
-        )
-        .run(),
-  isLineComplete:
-    (playfield: Playfield) =>
-    (line: number): boolean =>
-      playfield.board.every((col) =>
-        col[line].fold({
-          onSome: () => true,
-          onNone: () => false,
-        })
-      ),
-  spaceOverlook:
-    (playfield: Playfield) =>
-    (position: Position): boolean =>
-      Maybe.of(playfield.board[position.col][position.row])
-        .flatMap((p) => p)
-        .fold({
-          onNone: False,
-          onSome: True,
-        }),
-  findCompleteLines: (playfield: Playfield) =>
-    Free.of(playfield.board[0].length)
-      .map((maxRow) => ({
-        rows: Array.from({ length: maxRow }, (_, i) => i),
-        isComplete: Playfields.isLineComplete(playfield),
-      }))
-      .map((context) => context.rows.filter(context.isComplete))
-      .run(),
-  // cleanLines:
-  //   (rows: Array<number>) =>
-  //   (playfield: Playfield): Playfield =>
-  //     PlayFieldFactory.of(playfield).cleanLines(rows).create(),
-};
+// const Playfields = {
+//   // width: (playfield: Playfield): number => playfield.board.length,
+//   // addPiece:
+//   //   (piece: Tetrimino) =>
+//   //   (playfield: Playfield): Playfield =>
+//   //     Free.of(piece)
+//   //       .map(
+//   //         Tetriminos.move({
+//   //           row: 0,
+//   //           col: Math.floor(playfield.board.length / 2) - piece.size / 2,
+//   //         })
+//   //       )
+//   //       .map((piece) =>
+//   //         PlayFieldFactory.of(playfield).withPiece(piece).create()
+//   //       )
+//   //       .run(),
+//   // isLineComplete:
+//   //   (playfield: Playfield) =>
+//   //   (line: number): boolean =>
+//   //     playfield.board.every((col) =>
+//   //       col[line].fold({
+//   //         onSome: () => true,
+//   //         onNone: () => false,
+//   //       })
+//   //     ),
+//   // spaceOverlook:
+//   //   (playfield: Playfield) =>
+//   //   (position: Position): boolean =>
+//   //     Maybe.of(playfield.board[position.col][position.row])
+//   //       .flatMap((p) => p)
+//   //       .fold({
+//   //         onNone: False,
+//   //         onSome: True,
+//   //       }),
+//   // findCompleteLines: (playfield: Playfield) =>
+//   //   Free.of(playfield.board[0].length)
+//   //     .map((maxRow) => ({
+//   //       rows: Array.from({ length: maxRow }, (_, i) => i),
+//   //       isComplete: Playfields.isLineComplete(playfield),
+//   //     }))
+//   //     .map((context) => context.rows.filter(context.isComplete))
+//   //     .run(),
+//   // cleanLines:
+//   //   (rows: Array<number>) =>
+//   //   (playfield: Playfield): Playfield =>
+//   //     PlayFieldFactory.of(playfield).cleanLines(rows).create(),
+// };
 
 export const movePiece =
   (diff: Position) =>
@@ -314,7 +360,7 @@ const MoveValidation = {
   operation: createOperation<Playfield, "touch" | "boundaries">(),
 
   withinLateralBoundaries: (playfield: Playfield) =>
-    Free.of(Playfields.width(playfield))
+    Free.of(PlayFieldFactory.of(playfield).width())
       .map((width) => ({
         validateBoundaries: Positions.withinLateralBoundaries(width),
         positions: Array.from(playfield.piece.positions),
@@ -327,13 +373,9 @@ const MoveValidation = {
       .run(),
 
   overlap: (playfield: Playfield) =>
-    Free.of({
-      positions: Array.from(playfield.piece.positions),
-      hasOverlapping: Playfields.spaceOverlook(playfield),
-    })
-      .map((context) => !!context.positions.find(context.hasOverlapping))
-      .map((hasOverlap) =>
-        hasOverlap
+    Free.of(PlayFieldFactory.of(playfield).pieceOverlaps())
+      .map((overlaps) =>
+        overlaps
           ? MoveValidation.operation.failure("touch")
           : MoveValidation.operation.success(playfield)
       )
@@ -553,8 +595,7 @@ export const Actions = {
       )
       .run(),
   score: (game: Game): Game =>
-    Free.of(game.playfield)
-      .map(Playfields.findCompleteLines)
+    Free.of(PlayFieldFactory.of(game.playfield).findCompleteLines())
       .map((lines) => ({
         score: Games.score(game.level)(lines.length),
         playfield: PlayFieldFactory.of(game.playfield)
@@ -572,12 +613,16 @@ export const Actions = {
     (pieceProvider: () => Tetrimino) =>
     (game: Game): Game =>
       Free.of(game.playfield)
-        .map((playfield) => PlayFieldFactory.of(playfield).merge().create())
+        .map((playfield) =>
+          PlayFieldFactory.of(playfield)
+            .merge()
+            .introducePiece(pieceProvider())
+            .create()
+        )
         // TODO: score and remove lines
         // - status: playing
         // - nextPiece: provider
         // - score
-        .map(Playfields.addPiece(pieceProvider()))
         .map(
           (playfield): Game =>
             MoveValidation.validateTickPosition(playfield).fold({
