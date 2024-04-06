@@ -19,12 +19,12 @@ type Playfield = {
   piece: Tetrimino;
 };
 
-type Game = {
+export type Game = {
   playfield: Playfield;
   score: number;
   level: number;
   nextPiece: Tetrimino;
-  status: "playing" | "paused" | "gameover" | "scoring";
+  status: "playing" | "pause" | "gameover" | "scoring" | "scored";
 };
 
 const Identity = <T>(a: T): T => a;
@@ -39,8 +39,10 @@ export const Positions = {
       .map((x) => ({ row: x[0], col: x[1] }))
       .run(),
 
-  toID: (c: Position): PositionID => `${c.row},${c.col}`,
-
+  inverse: (p: Position): Position => ({
+    row: -p.row,
+    col: -p.col,
+  }),
   add:
     (a: Position) =>
     (b: Position): Position => ({
@@ -48,18 +50,16 @@ export const Positions = {
       col: a.col + b.col,
     }),
 
-  // hasOverlap: (a: Set<PositionID>) => (b: Set<PositionID>) =>
-  //   Array.from(a).some((pos) => b.has(pos)),
-
-  listFromSet: (p: Set<PositionID>) => Array.from(p, Positions.fromID),
-
   withinLateralBoundaries: (max: number) => (target: Position) =>
     target.col < max && target.col >= 0,
-  grounded: (target: Position) => target.row >= 0,
+
+  grounded: (target: Position) => target.row < 0,
+
   flipClockwise: (max: number) => (target: Position) => ({
     row: target.col,
     col: max - target.row - 1,
   }),
+
   flipReverseClockwise: (max: number) => (target: Position) => ({
     row: max - target.col - 1,
     col: target.row,
@@ -166,9 +166,17 @@ export const Tetriminos = {
 
       return factory.create();
     },
+  normalizePosition: (piece: Tetrimino) =>
+    Free.of(piece)
+      .map(Tetriminos.move(Positions.inverse(piece.origin)))
+      .run(),
+  denormalizePosition: (origin: Position) => (piece: Tetrimino) =>
+    Free.of(piece).map(Tetriminos.move(origin)).run(),
+
   reverseClockwise: (piece: Tetrimino) =>
-    Free.of(piece.positions)
-      .map((p) => Array.from(p))
+    Free.of(piece)
+      .map(Tetriminos.normalizePosition)
+      .map((p) => Array.from(p.positions))
       .map((positions) => ({
         positions,
         flip: Positions.flipReverseClockwise(piece.size),
@@ -177,10 +185,12 @@ export const Tetriminos = {
       .map((positions) =>
         TetriminoFactory.emptyFrom(piece).withPositionsList(positions).create()
       )
+      .map(Tetriminos.denormalizePosition(piece.origin))
       .run(),
   clockwise: (piece: Tetrimino) =>
-    Free.of(piece.positions)
-      .map((p) => Array.from(p))
+    Free.of(piece)
+      .map(Tetriminos.normalizePosition)
+      .map((p) => Array.from(p.positions))
       .map((positions) => ({
         positions,
         flip: Positions.flipClockwise(piece.size),
@@ -189,11 +199,12 @@ export const Tetriminos = {
       .map((positions) =>
         TetriminoFactory.emptyFrom(piece).withPositionsList(positions).create()
       )
+      .map(Tetriminos.denormalizePosition(piece.origin))
       .run(),
 };
 
 const Moves = {
-  down: Tetriminos.move({ row: 1, col: 0 }),
+  down: Tetriminos.move({ row: -1, col: 0 }),
   right: Tetriminos.move({ row: 0, col: 1 }),
   left: Tetriminos.move({ row: 0, col: -1 }),
 };
@@ -224,8 +235,8 @@ class PlayFieldFactory {
     const centeredPiece = Free.of(piece)
       .map(
         Tetriminos.move({
-          row: 0,
-          col: Math.floor(this.value.board.length / 2) - piece.size / 2,
+          row: this.height() - piece.size,
+          col: Math.floor(this.value.board.length / 2 - piece.size / 2),
         })
       )
       .run();
@@ -298,54 +309,6 @@ class PlayFieldFactory {
   }
 }
 
-// const Playfields = {
-//   // width: (playfield: Playfield): number => playfield.board.length,
-//   // addPiece:
-//   //   (piece: Tetrimino) =>
-//   //   (playfield: Playfield): Playfield =>
-//   //     Free.of(piece)
-//   //       .map(
-//   //         Tetriminos.move({
-//   //           row: 0,
-//   //           col: Math.floor(playfield.board.length / 2) - piece.size / 2,
-//   //         })
-//   //       )
-//   //       .map((piece) =>
-//   //         PlayFieldFactory.of(playfield).withPiece(piece).create()
-//   //       )
-//   //       .run(),
-//   // isLineComplete:
-//   //   (playfield: Playfield) =>
-//   //   (line: number): boolean =>
-//   //     playfield.board.every((col) =>
-//   //       col[line].fold({
-//   //         onSome: () => true,
-//   //         onNone: () => false,
-//   //       })
-//   //     ),
-//   // spaceOverlook:
-//   //   (playfield: Playfield) =>
-//   //   (position: Position): boolean =>
-//   //     Maybe.of(playfield.board[position.col][position.row])
-//   //       .flatMap((p) => p)
-//   //       .fold({
-//   //         onNone: False,
-//   //         onSome: True,
-//   //       }),
-//   // findCompleteLines: (playfield: Playfield) =>
-//   //   Free.of(playfield.board[0].length)
-//   //     .map((maxRow) => ({
-//   //       rows: Array.from({ length: maxRow }, (_, i) => i),
-//   //       isComplete: Playfields.isLineComplete(playfield),
-//   //     }))
-//   //     .map((context) => context.rows.filter(context.isComplete))
-//   //     .run(),
-//   // cleanLines:
-//   //   (rows: Array<number>) =>
-//   //   (playfield: Playfield): Playfield =>
-//   //     PlayFieldFactory.of(playfield).cleanLines(rows).create(),
-// };
-
 export const movePiece =
   (diff: Position) =>
   (piece: Tetrimino): Tetrimino => {
@@ -400,8 +363,8 @@ const MoveValidation = {
   validateTickPosition: (playfield: Playfield) =>
     MoveValidation.operation
       .success(playfield)
-      .flatMap(MoveValidation.ground)
-      .flatMap(MoveValidation.overlap),
+      .flatMap(MoveValidation.overlap)
+      .flatMap(MoveValidation.ground),
 };
 
 class GameFactory {
@@ -419,48 +382,10 @@ class GameFactory {
     });
   }
 
-  static fromGame(game: Game) {
+  static of(game: Game) {
     return new GameFactory(game);
   }
-  withPlayfield = (playfield: Playfield) => {
-    this.value.playfield = playfield;
-    return this;
-  };
-  withScore = (score: number) => {
-    this.value.score = score;
-    return this;
-  };
-  withLevel = (level: number) => {
-    this.value.level = level;
-    return this;
-  };
-  withStatus = (status: Game["status"]) => {
-    this.value.status = status;
-    return this;
-  };
-  withNextPiece = (piece: Tetrimino) => {
-    this.value.nextPiece = piece;
-    return this;
-  };
-  create() {
-    return this.value;
-  }
-}
-
-const Games = {
-  updatePlayfield:
-    (game: Game) =>
-    (playfield: Playfield): Game => ({
-      ...game,
-      playfield,
-    }),
-  updateStatus:
-    (status: Game["status"]) =>
-    (game: Game): Game => ({
-      ...game,
-      status,
-    }),
-  scoreFromLines: (lines: number) => {
+  scoreFromLines(lines: number) {
     switch (lines) {
       case 1:
         return 100;
@@ -473,10 +398,68 @@ const Games = {
       default:
         return 0;
     }
-  },
-  score: (level: number) => (lines: number) =>
-    level * Games.scoreFromLines(lines),
-};
+  }
+  score(lines: number) {
+    const score = this.value.level * this.scoreFromLines(lines);
+    this.withScore(score);
+    return this;
+  }
+
+  withPlayfield = (playfield: Playfield) => {
+    this.value = { ...this.value, playfield };
+    return this;
+  };
+  withScore = (score: number) => {
+    this.value = { ...this.value, score };
+    return this;
+  };
+  withLevel = (level: number) => {
+    this.value = { ...this.value, level };
+    return this;
+  };
+  withStatus = (status: Game["status"]) => {
+    this.value = { ...this.value, status };
+    return this;
+  };
+  withNextPiece = (nextPiece: Tetrimino) => {
+    this.value = { ...this.value, nextPiece };
+    return this;
+  };
+  create() {
+    return this.value;
+  }
+}
+
+// const Games = {
+//   updatePlayfield:
+//     (game: Game) =>
+//     (playfield: Playfield): Game => ({
+//       ...game,
+//       playfield,
+//     }),
+//   updateStatus:
+//     (status: Game["status"]) =>
+//     (game: Game): Game => ({
+//       ...game,
+//       status,
+//     }),
+//   scoreFromLines: (lines: number) => {
+//     switch (lines) {
+//       case 1:
+//         return 100;
+//       case 2:
+//         return 300;
+//       case 3:
+//         return 500;
+//       case 4:
+//         return 800;
+//       default:
+//         return 0;
+//     }
+//   },
+//   score: (level: number) => (lines: number) =>
+//     level * Games.scoreFromLines(lines),
+// };
 
 const Flows = {
   lateral:
@@ -490,7 +473,7 @@ const Flows = {
         .map(MoveValidation.validateLateralPosition)
         .map((operation) =>
           operation.fold({
-            success: Games.updatePlayfield(game),
+            success: (p) => GameFactory.of(game).withPlayfield(p).create(),
             failure: () => game,
           })
         )
@@ -519,20 +502,10 @@ const Flows = {
         .map((piece) =>
           PlayFieldFactory.of(game.playfield).withPiece(piece).create()
         )
-        .map(Games.updatePlayfield(game))
+        .map((playfield) =>
+          GameFactory.of(game).withPlayfield(playfield).create()
+        )
         .run(),
-  // cleanLines:
-  //   (lines: Array<number>) =>
-  //   (playfield: Playfield): Playfield =>
-  //     Free.of(
-  //       lines.reduce(
-  //         (acc, row) => Free.of(acc).map(Playfields.filterLine(row)).run(),
-  //         playfield
-  //       )
-  //     )
-  //       // .map(Playfields.dropLines(lines.length))
-  //       // .map()
-  //       .run(),
 
   getRandomTetrimono() {
     let randomPiece = Free.of(Tetriminos.patterns)
@@ -553,22 +526,47 @@ const Flows = {
 };
 
 export const Actions = {
+  randomTetrimo: Flows.getRandomTetrimono,
   moveRight: Flows.lateral("right"),
   moveLeft: Flows.lateral("left"),
   rotate: Flows.rotate("clock"),
   rotateReverse: Flows.rotate("reverse"),
+  pause: (game: Game): Game =>
+    GameFactory.of(game)
+      .withStatus(game.status === "pause" ? "playing" : "pause")
+      .create(),
+  levelSpeed: (game: Game) => {
+    switch (game.level) {
+      case 0:
+        return 1000;
+      case 1:
+        return 900;
+      case 2:
+        return 800;
+      case 3:
+        return 700;
+      case 4:
+        return 600;
+      case 5:
+        return 500;
+      case 6:
+        return 400;
+      case 7:
+        return 300;
+      case 8:
+        return 200;
+      default:
+        return 100;
+    }
+  },
   createGame:
     (size: { row: number; col: number }) =>
     (piece: Tetrimino) =>
     (nextPiece: Tetrimino) =>
       Free.of(piece)
-        .map(
-          Tetriminos.move({
-            row: 0,
-            col: Math.floor(size.col / 2) - piece.size / 2,
-          })
+        .map((p) =>
+          PlayFieldFactory.create(size, p).introducePiece(piece).create()
         )
-        .map((movedPiece) => PlayFieldFactory.create(size, movedPiece).create())
         .map((playfield) =>
           GameFactory.fromPlayfield(playfield).withNextPiece(nextPiece).create()
         )
@@ -582,33 +580,36 @@ export const Actions = {
       )
       .map((p) =>
         MoveValidation.validateTickPosition(p).fold({
-          success: Games.updatePlayfield(game),
+          success: (p) => GameFactory.of(game).withPlayfield(p).create(),
           failure: () =>
-            Free.of(game.playfield)
-              .map((playfield) =>
-                PlayFieldFactory.of(playfield).merge().create()
+            GameFactory.of(game)
+              .withPlayfield(
+                PlayFieldFactory.of(game.playfield).merge().create()
               )
-              .map(Games.updatePlayfield(game))
-              .map(Games.updateStatus("scoring"))
-              .run(),
+              .withStatus("scoring")
+              .create(),
         })
       )
       .run(),
   score: (game: Game): Game =>
-    Free.of(PlayFieldFactory.of(game.playfield).findCompleteLines())
+    Maybe.of(PlayFieldFactory.of(game.playfield).findCompleteLines())
+      .flatMap((lines) =>
+        lines.length === 0 ? Maybe.none<number[]>() : Maybe.of(lines)
+      )
       .map((lines) => ({
-        score: Games.score(game.level)(lines.length),
+        lines,
         playfield: PlayFieldFactory.of(game.playfield)
           .cleanLines(lines)
           .create(),
       }))
-      .map(({ score, playfield }) =>
-        GameFactory.fromGame(game)
-          .withScore(score)
-          .withPlayfield(playfield)
-          .create()
-      )
-      .run(),
+      .fold({
+        onNone: () => GameFactory.of(game).withStatus("scored").create(),
+        onSome: (ctx) =>
+          GameFactory.of(game)
+            .score(ctx.lines.length)
+            .withPlayfield(ctx.playfield)
+            .create(),
+      }),
   applyNextPiece:
     (pieceProvider: () => Tetrimino) =>
     (game: Game): Game =>
@@ -619,27 +620,20 @@ export const Actions = {
             .introducePiece(pieceProvider())
             .create()
         )
-        // TODO: score and remove lines
-        // - status: playing
-        // - nextPiece: provider
-        // - score
         .map(
           (playfield): Game =>
             MoveValidation.validateTickPosition(playfield).fold({
               success: () =>
-                Free.of(playfield).map(Games.updatePlayfield(game)).run(),
+                GameFactory.of(game)
+                  .withPlayfield(playfield)
+                  .withStatus("playing")
+                  .create(),
               failure: () =>
-                Free.of(playfield)
-                  .map(Games.updatePlayfield(game))
-                  .map(Games.updateStatus("gameover"))
-                  .run(),
+                GameFactory.of(game)
+                  .withPlayfield(playfield)
+                  .withStatus("gameover")
+                  .create(),
             })
         )
         .run(),
-  // drop: (game: Game): Game =>
-  //   Free.of(game.playfield)
-  //     .map(Flows.dropPiece)
-  //     .map(Games.updatePlayfield(game))
-  //     // TODO
-  //     .run(),
 };
