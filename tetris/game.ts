@@ -9,12 +9,12 @@ type Tetrimino = {
   color: string;
   size: number;
   origin: Position;
-  positions: Set<Position>;
+  positions: Array<Position>;
 };
 
 type Block = string;
 
-type Playfield = {
+export type Playfield = {
   board: Array<Array<Maybe<Block>>>;
   piece: Tetrimino;
 };
@@ -49,6 +49,10 @@ export const Positions = {
       row: a.row + b.row,
       col: a.col + b.col,
     }),
+  equals:
+    (a: Position) =>
+    (b: Position): boolean =>
+      a.row === b.row && a.col === b.col,
 
   withinLateralBoundaries: (max: number) => (target: Position) =>
     target.col < max && target.col >= 0,
@@ -73,7 +77,7 @@ export class TetriminoFactory {
       size,
       origin: Positions.ORIGIN,
       color,
-      positions: new Set(),
+      positions: [],
     };
   }
   static of(size: number, color: string) {
@@ -83,13 +87,11 @@ export class TetriminoFactory {
     return new TetriminoFactory(tetrimono.size, tetrimono.color);
   }
   withPosition = (p: Position) => {
-    this.value.positions.add(p);
+    this.value.positions.push(p);
     return this;
   };
   withPositionsList = (p: Array<Position>) => {
-    this.value.positions = Free.of(p)
-      .map((list) => new Set(list))
-      .run();
+    this.value.positions = p;
     return this;
   };
   withOrigin = (p: Position) => {
@@ -148,8 +150,8 @@ export const Tetriminos = {
   } as const,
   equals: (a: Tetrimino) => (b: Tetrimino) => {
     if (a.color !== b.color) return false;
-    if (a.positions.size !== b.positions.size) return false;
-    return Array.from(a.positions).every((pos) => b.positions.has(pos));
+    if (a.positions.length !== b.positions.length) return false;
+    return a.positions.every((aa) => !!b.positions.find(Positions.equals(aa)));
   },
   move:
     (diff: Position) =>
@@ -176,7 +178,7 @@ export const Tetriminos = {
   reverseClockwise: (piece: Tetrimino) =>
     Free.of(piece)
       .map(Tetriminos.normalizePosition)
-      .map((p) => Array.from(p.positions))
+      .map((p) => p.positions)
       .map((positions) => ({
         positions,
         flip: Positions.flipReverseClockwise(piece.size),
@@ -190,7 +192,7 @@ export const Tetriminos = {
   clockwise: (piece: Tetrimino) =>
     Free.of(piece)
       .map(Tetriminos.normalizePosition)
-      .map((p) => Array.from(p.positions))
+      .map((p) => p.positions)
       .map((positions) => ({
         positions,
         flip: Positions.flipClockwise(piece.size),
@@ -209,7 +211,7 @@ const Moves = {
   left: Tetriminos.move({ row: 0, col: -1 }),
 };
 
-class PlayFieldFactory {
+export class PlayFieldFactory {
   private value: Playfield;
   constructor(value: Playfield) {
     this.value = value;
@@ -259,11 +261,11 @@ class PlayFieldFactory {
       Maybe.none()
     );
 
-    const matchingLine = <T>(_r: T, index: number) =>
-      lines.some((line) => line === index);
+    const linesSet = new Set(lines);
+    const matchingLine = <T>(_r: T, index: number) => !linesSet.has(index);
 
     this.value.board = this.value.board.map((column) =>
-      Free.of(column.concat())
+      Free.of(column)
         .map((c) => c.filter(matchingLine))
         .map((c) => c.concat(filler))
         .run()
@@ -281,13 +283,13 @@ class PlayFieldFactory {
   isLineComplete(line: number) {
     return this.value.board.every((col) =>
       col[line].fold({
-        onSome: () => true,
-        onNone: () => false,
+        onSome: True,
+        onNone: False,
       })
     );
   }
   isPositionTaken(position: Position) {
-    return Maybe.of(this.value.board[position.col][position.col])
+    return Maybe.of(this.value.board[position.col][position.row])
       .flatMap((m) => m)
       .fold({
         onSome: True,
@@ -300,7 +302,7 @@ class PlayFieldFactory {
     );
   }
   pieceOverlaps() {
-    return Array.from(this.value.piece.positions).some((position) =>
+    return this.value.piece.positions.some((position) =>
       this.isPositionTaken(position)
     );
   }
@@ -326,7 +328,7 @@ const MoveValidation = {
     Free.of(PlayFieldFactory.of(playfield).width())
       .map((width) => ({
         validateBoundaries: Positions.withinLateralBoundaries(width),
-        positions: Array.from(playfield.piece.positions),
+        positions: playfield.piece.positions,
       }))
       .map(({ validateBoundaries, positions }) =>
         positions.every(validateBoundaries)
@@ -345,7 +347,6 @@ const MoveValidation = {
       .run(),
   ground: (playfield: Playfield) =>
     Free.of(playfield.piece.positions)
-      .map((positions) => Array.from(positions))
       .map((positions) => positions.find(Positions.grounded))
       .map((groundedPosition) =>
         !groundedPosition
@@ -367,7 +368,7 @@ const MoveValidation = {
       .flatMap(MoveValidation.ground),
 };
 
-class GameFactory {
+export class GameFactory {
   private value: Game;
   constructor(game: Game) {
     this.value = game;
