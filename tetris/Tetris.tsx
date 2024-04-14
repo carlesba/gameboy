@@ -141,6 +141,7 @@ export function Piece(props: { value: Game["nextPiece"] }) {
 
 export function Board(props: {
   value: Game["playfield"]["board"];
+  gameOver?: boolean;
   children?: React.ReactNode;
 }) {
   return (
@@ -149,6 +150,7 @@ export function Board(props: {
         position: "relative",
         width: `${BLOCK_SIZE * props.value.length}px`,
         height: `${BLOCK_SIZE * props.value[0].length}px`,
+        filter: !props.gameOver ? undefined : "blur(4px)",
       }}
     >
       {props.value.map((columns, col) =>
@@ -198,7 +200,10 @@ export function GameView() {
       </div>
 
       <hr />
-      <Board value={game.value.playfield.board}>
+      <Board
+        gameOver={game.value.status === "gameover"}
+        value={game.value.playfield.board}
+      >
         <Piece value={game.value.playfield.piece} />
       </Board>
     </div>
