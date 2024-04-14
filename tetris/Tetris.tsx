@@ -102,9 +102,9 @@ function useGame() {
     pause() {
       setValue(Actions.pause);
     },
-    // consolidate(){
-    //   setValue(v => v.map(Actions.consolidate))
-    // },
+    consolidate() {
+      setValue(Actions.consolidatePiece);
+    },
   };
 }
 
@@ -189,6 +189,9 @@ export function GameView() {
       </div>
       <div>
         <button onClick={game.nextTick}>nextTick</button>
+      </div>
+      <div>
+        <button onClick={game.consolidate}>consolidate</button>
       </div>
       <div>
         <button onClick={game.pause}>pause</button>

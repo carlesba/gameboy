@@ -3,7 +3,7 @@ import { Maybe } from "./Maybe";
 import { createOperation } from "./Operation";
 
 type PositionID = `${number},${number}`;
-type Position = { row: number; col: number };
+export type Position = { row: number; col: number };
 
 type Tetrimino = {
   color: string;
@@ -96,6 +96,10 @@ export class TetriminoFactory {
   };
   withOrigin = (p: Position) => {
     this.value.origin = p;
+    return this;
+  };
+  move = (diff: Position) => {
+    this.value = Tetriminos.move(diff)(this.value);
     return this;
   };
   create() {
@@ -593,10 +597,12 @@ export const Actions = {
       )
       .run(),
   score: (game: Game): Game =>
-    Maybe.of(PlayFieldFactory.of(game.playfield).findCompleteLines())
-      .flatMap((lines) =>
+    Free.of(game.playfield)
+      .map((p) => PlayFieldFactory.of(p).findCompleteLines())
+      .map((lines) =>
         lines.length === 0 ? Maybe.none<number[]>() : Maybe.of(lines)
       )
+      .run()
       .map((lines) => ({
         lines,
         playfield: PlayFieldFactory.of(game.playfield)
@@ -611,6 +617,11 @@ export const Actions = {
             .withPlayfield(ctx.playfield)
             .create(),
       }),
+  consolidatePiece: (game: Game): Game =>
+    Free.of(game)
+      .map(Actions.nextTick)
+      .map((g) => (g.status === "scoring" ? g : Actions.consolidatePiece(g)))
+      .run(),
   applyNextPiece:
     (pieceProvider: () => Tetrimino) =>
     (game: Game): Game =>

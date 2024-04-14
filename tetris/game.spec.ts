@@ -1,8 +1,10 @@
 import { test, expect, describe } from "vitest";
 import {
+  Actions,
   GameFactory,
   PlayFieldFactory,
   Playfield,
+  Position,
   Positions,
   TetriminoFactory,
   movePiece,
@@ -10,6 +12,12 @@ import {
 import { Maybe } from "./Maybe";
 import { Free } from "./Free";
 
+const tap =
+  <T>(fn: (a: T) => void) =>
+  (a: T) => {
+    fn(a);
+    return a;
+  };
 const color = "red";
 
 const moveDown = movePiece({ row: 1, col: 0 });
@@ -64,30 +72,21 @@ const Matrix = {
   },
 };
 
-const piece = TetriminoFactory.of(2, color)
-  .withPosition({ row: 0, col: 0 })
-  .create();
 const block = Maybe.some<string>(color);
 
-const renderBoard = (board: Maybe<string>[][]): string => {
-  let output = "";
-  Free.of(board)
-    .map(Matrix.transpose)
-    .map(Matrix.reverseVertically)
-    .run()
-    .forEach((col) => {
-      col.forEach((block) => {
-        output += block.fold({
-          onSome: () => "X",
-          onNone: () => "O",
-        });
-      });
-      output += "\n";
-    });
-  return output;
-};
+const Test = {
+  flatPiece: TetriminoFactory.of(2, color)
+    .withPosition({ row: 0, col: 0 })
+    .withPosition({ row: 0, col: 1 })
+    .move({ row: 4, col: 0 })
+    .create(),
 
-const TextPlayfield = {
+  dotPiece: TetriminoFactory.of(2, color)
+    .withPosition({ row: 0, col: 0 })
+    .move({ row: 4, col: 0 })
+    .create(),
+
+  clean: (s: string) => s.trim(),
   render(field: Playfield): string {
     let output = "";
     Free.of(field.board)
@@ -105,8 +104,8 @@ const TextPlayfield = {
       });
     return output.trim();
   },
-  fromText(text: string): Playfield {
-    return Free.of(text.split("\n"))
+  fromText(text: string, piece: Playfield["piece"]): Playfield {
+    return Free.of(text.trim().split("\n"))
       .map((t) =>
         t.map((row) =>
           row
@@ -129,62 +128,113 @@ const TextPlayfield = {
       )
       .run();
   },
+  debug(input: string, output: string) {
+    console.log("::: A :::");
+    console.log(input);
+    console.log("");
+    console.log("::: B :::");
+    console.log(output);
+  },
 };
-
-function debugDiff(input: string, output: string) {
-  console.log("::: A :::");
-  console.log(input);
-  console.log("");
-  console.log("::: B :::");
-  console.log(output);
-}
 
 describe("clean lines", () => {
   test("last line", () => {
-    const input = `
+    const input = Test.clean(`
 OO
 OO
 OX
 XX
-`.trim();
-    const expectedOutput = `
+`);
+    const expectedOutput = Test.clean(`
 OO
 OO
 OO
 OX
-`.trim();
-    const output = Free.of(input)
-      .map(TextPlayfield.fromText)
+`);
+    const output = Free.of(Test.fromText(input, Test.dotPiece))
       .map((field) => PlayFieldFactory.of(field).cleanLines([0]).create())
-      .map(TextPlayfield.render)
+      .map(Test.render)
       .run();
 
     expect(output).toBe(expectedOutput);
   });
 
   test("multiple lines", () => {
-    const input = `
+    const input = Test.clean(`
 OO
 OO
 XX
 OX
 XX
-`.trim();
-    const expectedOutput = `
+`);
+    const expectedOutput = Test.clean(`
 OO
 OO
 OO
 OO
 OX
-`.trim();
-    const output = Free.of(input)
-      .map(TextPlayfield.fromText)
+`);
+    const output = Free.of(Test.fromText(input, Test.dotPiece))
       .map((field) => PlayFieldFactory.of(field).cleanLines([0, 2]).create())
-      .map(TextPlayfield.render)
+      .map(Test.render)
       .run();
 
-    debugDiff(output, expectedOutput);
+    // debugDiff(output, expectedOutput);
 
     expect(output).toBe(expectedOutput);
+  });
+});
+
+describe("consolidate", () => {
+  test.only("piece goes to the bottom", () => {
+    const a = Test.clean(`
+OO
+OO
+OO
+OO
+OX
+`);
+
+    const act = (input: string, p: Playfield["piece"]) =>
+      Free.of(input)
+        .map((i) => Test.fromText(i, p))
+        // .map(
+        //   tap((g) => {
+        //     console.log("::: Test :::");
+        //     console.log(Test.render(g));
+        //     console.log(g.piece);
+        //   })
+        // )
+        .map((field) => GameFactory.fromPlayfield(field).create())
+        .map(Actions.consolidatePiece)
+        .map(
+          tap((g) => {
+            expect(g.status).toBe("scoring");
+          })
+        )
+        .map((g) => g.playfield)
+        .map(Test.render)
+        .run();
+
+    const expectedB = Test.clean(`
+OO
+OO
+OO
+XX
+OX
+`);
+    const expectedC = Test.clean(`
+OO
+OO
+XO
+XX
+OX
+`);
+    const b = act(a, Test.flatPiece);
+    const c = act(expectedB, Test.dotPiece);
+    // Test.debug(c, expectedC);
+
+    expect(b).toEqual(expectedB);
+    expect(c).toEqual(expectedC);
   });
 });
