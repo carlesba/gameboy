@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Actions, Game } from "@/tetris/game";
+import { Actions, Game } from "@/tetris";
 import { Free } from "@/tetris/Free";
 import { Maybe } from "@/tetris/Maybe";
 
