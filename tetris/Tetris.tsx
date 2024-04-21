@@ -1,112 +1,117 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Actions, Game } from "@/tetris";
-import { Free } from "@/tetris/Free";
-import { Maybe } from "@/tetris/Maybe";
+import {
+  Actions,
+  Game,
+  Free,
+  Maybe,
+  Tetris as TetrisGame,
+  Noop,
+} from "@/tetris";
 
-const SIZE = { row: 20, col: 10 };
-const createGame = () =>
-  Free.of(Actions.createGame)
-    .map((create) => create(SIZE))
-    .map((create) => create(Actions.randomTetrimo()))
-    .map((create) => create(Actions.randomTetrimo()))
-    .run();
+// const SIZE = { row: 20, col: 10 };
+// const createGame = () =>
+//   Free.of(Actions.createGame)
+//     .map((create) => create(SIZE))
+//     .map((create) => create(Actions.randomTetrimo()))
+//     .map((create) => create(Actions.randomTetrimo()))
+//     .run();
+//
+// function useTicker() {
+//   const tick = useRef(new Date().getTime());
+//
+//   return {
+//     next(gap: number) {
+//       tick.current = Free.of(new Date())
+//         .map((date) => date.getTime())
+//         .map((time) => time + gap)
+//         .run();
+//     },
+//     done() {
+//       const now = new Date().getTime();
+//       return now > tick.current;
+//     },
+//   };
+// }
+// function useInterval(tick: () => unknown) {
+//   const timer = useRef<ReturnType<typeof setInterval>>();
+//   const tickRef = useRef(tick);
+//
+//   useEffect(() => {
+//     tickRef.current = tick;
+//   }, [tick]);
+//
+//   useEffect(() => {
+//     timer.current = setInterval(() => {
+//       tickRef.current();
+//     }, 10);
+//     return () => {
+//       if (timer.current) {
+//         clearInterval(timer.current);
+//       }
+//     };
+//   }, []);
+// }
 
-function useTicker() {
-  const tick = useRef(new Date().getTime());
-
-  return {
-    next(gap: number) {
-      tick.current = Free.of(new Date())
-        .map((date) => date.getTime())
-        .map((time) => time + gap)
-        .run();
-    },
-    done() {
-      const now = new Date().getTime();
-      return now > tick.current;
-    },
-  };
-}
-function useInterval(tick: () => unknown) {
-  const timer = useRef<ReturnType<typeof setInterval>>();
-  const tickRef = useRef(tick);
-
-  useEffect(() => {
-    tickRef.current = tick;
-  }, [tick]);
-
-  useEffect(() => {
-    timer.current = setInterval(() => {
-      tickRef.current();
-    }, 10);
-    return () => {
-      if (timer.current) {
-        clearInterval(timer.current);
-      }
-    };
-  }, []);
-}
-
-function useGame() {
-  const [value, setValue] = useState(createGame);
-  const pieceDownTicker = useTicker();
-  const scoringTicker = useTicker();
-
-  useInterval(() => {
-    Maybe.of(value)
-      .check(pieceDownTicker.done)
-      .check((game) => game.status === "playing")
-      .map(Actions.nextTick)
-      .whenSome((game) =>
-        Free.of(game).map(Actions.levelSpeed).map(pieceDownTicker.next).run()
-      )
-      .whenSome(setValue);
-
-    Maybe.of(value)
-      .check((game) => game.status === "scoring")
-      .check(scoringTicker.done)
-      .map(Actions.score)
-      .whenSome(() => scoringTicker.next(100))
-      .whenSome(setValue);
-
-    Maybe.of(value)
-      .check((game) => game.status === "scored")
-      .check(scoringTicker.done)
-      .map(Actions.applyNextPiece(Actions.randomTetrimo))
-      .whenSome(setValue);
-  });
-
-  return {
-    value,
-    start() {
-      const game = createGame();
-      pieceDownTicker.next(Actions.levelSpeed(game));
-      setValue(game);
-    },
-    right() {
-      setValue(Actions.moveRight);
-    },
-    left() {
-      setValue(Actions.moveLeft);
-    },
-    rotate() {
-      setValue(Actions.rotate);
-    },
-    rotateReverse() {
-      setValue(Actions.rotateReverse);
-    },
-    nextTick() {
-      setValue(Actions.nextTick);
-    },
-    pause() {
-      setValue(Actions.pause);
-    },
-    consolidate() {
-      setValue(Actions.consolidatePiece);
-    },
-  };
-}
+// function useGame() {
+//   const [value, setValue] = useState(createGame);
+//   const pieceDownTicker = useTicker();
+//   const scoringTicker = useTicker();
+//
+//   useInterval(() => {
+//     Maybe.of(value)
+//       .check(pieceDownTicker.done)
+//       .check((game) => game.status === "playing")
+//       .map(Actions.nextTick)
+//       .whenSome((game) =>
+//         Free.of(game).map(Actions.levelSpeed).map(pieceDownTicker.next).run()
+//       )
+//       .whenSome(setValue);
+//
+//     Maybe.of(value)
+//       .check((game) => game.status === "scoring")
+//       .check(scoringTicker.done)
+//       .map(Actions.score)
+//       .whenSome(() => scoringTicker.next(100))
+//       .whenSome(setValue);
+//
+//     Maybe.of(value)
+//       .check((game) => game.status === "scored")
+//       .check(scoringTicker.done)
+//       .map(Actions.applyNextPiece(Actions.randomTetrimo))
+//       .whenSome(setValue);
+//   });
+//
+//   return {
+//     value,
+//     start() {
+//       const game = createGame();
+//       pieceDownTicker.next(Actions.levelSpeed(game));
+//       setValue(game);
+//     },
+//     right() {
+//       setValue(Actions.moveRight);
+//     },
+//     left() {
+//       setValue(Actions.moveLeft);
+//     },
+//     rotate() {
+//       setValue(Actions.rotate);
+//     },
+//     rotateReverse() {
+//       setValue(Actions.rotateReverse);
+//     },
+//     nextTick() {
+//       setValue(Actions.nextTick);
+//     },
+//     pause() {
+//       setValue(Actions.pause);
+//     },
+//     consolidate() {
+//       setValue(Actions.consolidatePiece);
+//     },
+//   };
+// }
 
 const BLOCK_SIZE = 20;
 function Block(props: { row: number; col: number; color: string }) {
@@ -129,7 +134,7 @@ function Block(props: { row: number; col: number; color: string }) {
   );
 }
 
-export function Piece(props: { value: Game["nextPiece"] }) {
+function Piece(props: { value: Game["nextPiece"] }) {
   return (
     <div>
       {Array.from(props.value.positions).map((p, i) => (
@@ -139,7 +144,7 @@ export function Piece(props: { value: Game["nextPiece"] }) {
   );
 }
 
-export function Board(props: {
+function Board(props: {
   value: Game["playfield"]["board"];
   gameOver?: boolean;
   children?: React.ReactNode;
@@ -166,10 +171,60 @@ export function Board(props: {
   );
 }
 
+function useWindowKeydown(fn: (e: KeyboardEvent) => unknown) {
+  useEffect(() => {
+    window.addEventListener("keydown", fn);
+    return () => {
+      window.removeEventListener("keydown", fn);
+    };
+  }, [fn]);
+}
+
+function useGame() {
+  const [game, setGame] = useState<Game | null>(null);
+  const tetris = useRef(
+    TetrisGame((event) => {
+      setGame(event.game);
+    })
+  );
+
+  useEffect(() => {
+    tetris.current.start();
+  }, []);
+
+  useWindowKeydown((e) => {
+    let action;
+    if (e.key === "ArrowLeft") {
+      action = "left" as const;
+    }
+    if (e.key === "ArrowRight") {
+      action = "right" as const;
+    }
+    if (e.key === "ArrowDown") {
+      action = "down" as const;
+    }
+    if (e.key === "i") {
+      action = "rotateA" as const;
+    }
+    if (e.key === "o") {
+      action = "rotateB" as const;
+    }
+    Maybe.of(action).whenSome(tetris.current.action);
+  });
+
+  return {
+    value: game,
+    dispatch: tetris.current.action,
+  };
+}
+
 export function GameView() {
   const game = useGame();
 
-  console.log("game", game.value);
+  console.log("game", game);
+  if (!game.value) {
+    return <div>loading...</div>;
+  }
   return (
     <div>
       <div>level: {game.value.level}</div>
@@ -178,25 +233,19 @@ export function GameView() {
       <hr />
 
       <div>
-        <button onClick={game.left}>left</button>
+        <button onClick={() => game.dispatch("left")}>left</button>
       </div>
       <div>
-        <button onClick={game.right}>right</button>
+        <button onClick={() => game.dispatch("right")}>right</button>
       </div>
       <div>
-        <button onClick={game.rotate}>rotate</button>
+        <button onClick={() => game.dispatch("down")}>down</button>
       </div>
       <div>
-        <button onClick={game.rotateReverse}>rotateReverse</button>
+        <button onClick={() => game.dispatch("rotateA")}>rotate A</button>
       </div>
       <div>
-        <button onClick={game.nextTick}>nextTick</button>
-      </div>
-      <div>
-        <button onClick={game.consolidate}>consolidate</button>
-      </div>
-      <div>
-        <button onClick={game.pause}>pause</button>
+        <button onClick={() => game.dispatch("rotateB")}>rotate B</button>
       </div>
 
       <hr />
