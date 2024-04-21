@@ -46,8 +46,12 @@ const Flows = {
         .map((piece) =>
           PlayFieldFactory.of(game.playfield).withPiece(piece).create()
         )
-        .map((playfield) =>
-          GameFactory.of(game).withPlayfield(playfield).create()
+        .map(MoveValidation.validateLateralPosition)
+        .map((operation) =>
+          operation.fold({
+            success: (p) => GameFactory.of(game).withPlayfield(p).create(),
+            failure: () => game,
+          })
         )
         .run(),
 
