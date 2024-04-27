@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "tdd": "vitest --watch",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typechecker": "tsc"
   },
   "dependencies": {
     "react": "^18",

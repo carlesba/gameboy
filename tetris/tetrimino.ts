@@ -24,6 +24,9 @@ export class TetriminoFactory {
   static emptyFrom(tetrimono: Tetrimino) {
     return new TetriminoFactory(tetrimono.size, tetrimono.color);
   }
+  static createEmpty(){
+    return new TetriminoFactory(0, "none").create();
+  }
   withPosition = (p: Position) => {
     this.value.positions.push(p);
     return this;

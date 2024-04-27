@@ -6,6 +6,7 @@ export type Game = {
   score: number;
   level: number;
   nextPiece: Tetrimino;
+  scoringLines: number[];
   status: "playing" | "pause" | "gameover" | "scoring" | "scored";
 };
 
@@ -19,6 +20,7 @@ export class GameFactory {
       playfield,
       score: 0,
       level: 0,
+      scoringLines: [],
       nextPiece: playfield.piece,
       status: "playing",
     });
@@ -27,7 +29,7 @@ export class GameFactory {
   static of(game: Game) {
     return new GameFactory(game);
   }
-  scoreFromLines(lines: number) {
+  static scoreFromLines(lines: number) {
     switch (lines) {
       case 1:
         return 100;
@@ -41,31 +43,33 @@ export class GameFactory {
         return 0;
     }
   }
-  score(lines: number) {
-    const score = this.value.level * this.scoreFromLines(lines);
-    this.withScore(score);
-    return this;
-  }
+  // score() {
+  //   const score =
+  //     this.value.level *
+  //     GameFactory.scoreFromLines(this.value.scoringLines.length);
+  //   return GameFactory.of(this.value).withScoringLines([]).withScore(score);
+  // }
 
   withPlayfield = (playfield: Playfield) => {
-    this.value = { ...this.value, playfield };
-    return this;
+    return GameFactory.of({ ...this.value, playfield });
   };
   withScore = (score: number) => {
-    this.value = { ...this.value, score };
-    return this;
+    return GameFactory.of({ ...this.value, score });
+  };
+  withScoringLines = (scoringLines: number[]) => {
+    return GameFactory.of({ ...this.value, scoringLines });
+  };
+  cleanScoringLines = () => {
+    return GameFactory.of({ ...this.value, scoringLines: [] });
   };
   withLevel = (level: number) => {
-    this.value = { ...this.value, level };
-    return this;
+    return GameFactory.of({ ...this.value, level });
   };
   withStatus = (status: Game["status"]) => {
-    this.value = { ...this.value, status };
-    return this;
+    return GameFactory.of({ ...this.value, status });
   };
   withNextPiece = (nextPiece: Tetrimino) => {
-    this.value = { ...this.value, nextPiece };
-    return this;
+    return GameFactory.of({ ...this.value, nextPiece });
   };
   create() {
     return this.value;

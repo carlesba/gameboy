@@ -1,9 +1,10 @@
 import { Free } from "./Free";
 import { Maybe } from "./Maybe";
+import { tap } from "./functional";
 import { Game, GameFactory } from "./game";
 import { MoveValidation, Moves } from "./moves";
 import { PlayFieldFactory, Playfield } from "./playfield";
-import { Tetrimino, Tetriminos } from "./tetrimino";
+import { Tetrimino, TetriminoFactory, Tetriminos } from "./tetrimino";
 
 const Flows = {
   lateral:
@@ -130,36 +131,43 @@ export const Actions = {
         MoveValidation.validateTickPosition(p).fold({
           success: (p) => GameFactory.of(game).withPlayfield(p).create(),
           failure: () =>
-            GameFactory.of(game)
-              .withPlayfield(
-                PlayFieldFactory.of(game.playfield).merge().create()
+            Free.of(game.playfield)
+              .map((f) =>
+                PlayFieldFactory.of(f)
+                  .mergePiece()
+                  .withPiece(TetriminoFactory.createEmpty())
+                  .create()
               )
-              .withStatus("scoring")
-              .create(),
+              .map((playfield) =>
+                GameFactory.of(game)
+                  .withPlayfield(playfield)
+                  .withScoringLines(
+                    PlayFieldFactory.of(playfield).findCompleteLines()
+                  )
+                  .withStatus("scoring")
+                  .create()
+              )
+              .run(),
         })
       )
       .run(),
   score: (game: Game): Game =>
-    Free.of(game.playfield)
-      .map((p) => PlayFieldFactory.of(p).findCompleteLines())
-      .map((lines) =>
-        lines.length === 0 ? Maybe.none<number[]>() : Maybe.of(lines)
-      )
-      .run()
-      .map((lines) => ({
-        lines,
-        playfield: PlayFieldFactory.of(game.playfield)
-          .cleanLines(lines)
+    Free.of(game)
+      .map((g) => ({
+        score: (g.level + 1) * GameFactory.scoreFromLines(g.scoringLines.length),
+        playfield: PlayFieldFactory.of(g.playfield)
+          .cleanLines(g.scoringLines)
           .create(),
       }))
-      .fold({
-        onNone: () => GameFactory.of(game).withStatus("scored").create(),
-        onSome: (ctx) =>
-          GameFactory.of(game)
-            .score(ctx.lines.length)
-            .withPlayfield(ctx.playfield)
-            .create(),
-      }),
+      .map((ctx) =>
+        GameFactory.of(game)
+          .withScoringLines([])
+          .withScore(ctx.score)
+          .withPlayfield(ctx.playfield)
+          .withStatus("scored")
+          .create()
+      )
+      .run(),
   consolidatePiece: (game: Game): Game =>
     Free.of(game)
       .map(Actions.nextTick)
@@ -171,7 +179,7 @@ export const Actions = {
       Free.of(game.playfield)
         .map((playfield) =>
           PlayFieldFactory.of(playfield)
-            .merge()
+            .mergePiece()
             .introducePiece(pieceProvider())
             .create()
         )

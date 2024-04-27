@@ -28,7 +28,7 @@ export const Test = {
     .move({ row: 4, col: 0 })
     .create(),
 
-  clean: (s: string) => s.trim(),
+  clean: (s: string) => s.trim().replace(/[^\S\r\n]+/g, ""),
   render(field: Playfield): string {
     let output = "";
     Free.of(field.board)

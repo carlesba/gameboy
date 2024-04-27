@@ -72,7 +72,7 @@ export class PlayFieldFactory {
 
     return this;
   }
-  merge() {
+  mergePiece() {
     const block = Maybe.of(this.value.piece.color);
     this.value.piece.positions.forEach((p) => {
       this.updatePosition(p, block);
