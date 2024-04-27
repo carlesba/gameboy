@@ -55,8 +55,8 @@ const CommandCreator = {
   scored: (timer: Timer) => (dispatch: DispatchTetrisEvent) => (value: Game) =>
     Maybe.of(value)
       .check(timer.done)
-      .whenSome((game) => dispatch({ type: "scored", game }))
-      .map(Actions.applyNextPiece(Actions.randomTetrimo)),
+      .map(Actions.cleanupScore(Actions.randomTetrimo))
+      .whenSome((game) => dispatch({ type: "scored", game })),
 };
 
 export function Tetris(onEvent: (event: TetrisEvent) => unknown) {

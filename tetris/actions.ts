@@ -154,7 +154,12 @@ export const Actions = {
   score: (game: Game): Game =>
     Free.of(game)
       .map((g) => ({
-        score: (g.level + 1) * GameFactory.scoreFromLines(g.scoringLines.length),
+        score: Free.of(g.level + 1)
+          .map(
+            (level) => level * GameFactory.scoreFromLines(g.scoringLines.length)
+          )
+          .map((score) => game.score + score)
+          .run(),
         playfield: PlayFieldFactory.of(g.playfield)
           .cleanLines(g.scoringLines)
           .create(),
@@ -173,14 +178,14 @@ export const Actions = {
       .map(Actions.nextTick)
       .map((g) => (g.status === "scoring" ? g : Actions.consolidatePiece(g)))
       .run(),
-  applyNextPiece:
+  cleanupScore:
     (pieceProvider: () => Tetrimino) =>
     (game: Game): Game =>
-      Free.of(game.playfield)
-        .map((playfield) =>
-          PlayFieldFactory.of(playfield)
-            .mergePiece()
+      Free.of(game)
+        .map((g) =>
+          PlayFieldFactory.of(g.playfield)
             .introducePiece(pieceProvider())
+            .cleanLines(g.scoringLines)
             .create()
         )
         .map(
