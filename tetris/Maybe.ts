@@ -15,6 +15,9 @@ export class Maybe<T> {
   static some<T>(value: NonNullable<T>): Maybe<T> {
     return new Maybe<T>(value);
   }
+  static fromBoolean(value: boolean ): Maybe<boolean> {
+    return value ? Maybe.some(value) : Maybe.none();
+  }
 
   isNone(): boolean {
     return this.value === null || this.value === undefined;

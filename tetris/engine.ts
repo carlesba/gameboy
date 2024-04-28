@@ -5,7 +5,7 @@ import { Always, Apply, Identity } from "./functional";
 import { Game } from "./game";
 
 type TetrisEvent = {
-  type: "gameover" | "scored" | "scoring" | "tick" | "action";
+  type: "gameover" | "scored" | "scoring" | "nextpiece" | "tick" | "action";
   game: Game;
 };
 
@@ -40,30 +40,39 @@ const CommandCreator = {
       Maybe.of(value)
         .check(timer.done)
         .map(Actions.nextTick)
-        .whenSome((game) => dispatch({ type: "tick", game }))
         .whenSome((game) =>
-          Free.of(game).map(Actions.levelSpeed).map(timer.next).run()
+          dispatch({
+            type: game.status === "scoring" ? "scoring" : "tick",
+            game,
+          })
+        )
+        .whenSome((game) =>
+          Free.of(value)
+            .map(Actions.levelSpeed)
+            .map((speed) => (game.scoringLines.length > 0 ? speed * 3 : speed))
+            .map(timer.next)
+            .run()
         ),
 
   scoring: (timer: Timer) => (dispatch: DispatchTetrisEvent) => (value: Game) =>
     Maybe.of(value)
       .check(timer.done)
       .map(Actions.score)
-      .whenSome((game) => dispatch({ type: "scoring", game }))
-      .whenSome(() => timer.next(800)),
+      .whenSome((game) => dispatch({ type: "scored", game })),
 
   scored: (timer: Timer) => (dispatch: DispatchTetrisEvent) => (value: Game) =>
     Maybe.of(value)
       .check(timer.done)
       .map(Actions.cleanupScore(Actions.randomTetrimo))
-      .whenSome((game) => dispatch({ type: "scored", game })),
+      .whenSome((game) => dispatch({ type: "nextpiece", game })),
 };
 
 export function Tetris(onEvent: (event: TetrisEvent) => unknown) {
   let game = createGame();
 
+  const timer = Timer.create();
   const [nextTick, scoring, scored] = Object.values(CommandCreator)
-    .map((createCommand) => createCommand(Timer.create()))
+    .map((createCommand) => createCommand(timer))
     .map((createCommand) => createCommand(onEvent));
 
   const nextGame = (game: Game) => {

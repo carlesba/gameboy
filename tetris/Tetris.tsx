@@ -3,9 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import { Game, Maybe, Tetris as TetrisGame } from "@/tetris";
 
 const BLOCK_SIZE = 20;
-function Block(props: { row: number; col: number; color: string }) {
+function Block(props: {
+  row: number;
+  col: number;
+  color: string;
+  blinking?: boolean;
+}) {
   return (
     <div
+      className={props.blinking ? "blinking" : ""}
       style={{
         position: "absolute",
         transition: "transform 100ms ease-in-out",
@@ -35,9 +41,11 @@ function Piece(props: { value: Game["nextPiece"] }) {
 
 function Board(props: {
   value: Game["playfield"]["board"];
+  scoringLines: number[];
   gameOver?: boolean;
   children?: React.ReactNode;
 }) {
+  const scoring = new Set(props.scoringLines);
   return (
     <div
       style={{
@@ -51,7 +59,15 @@ function Board(props: {
         columns.map((block, row) =>
           block.fold({
             onNone: () => <Block col={col} row={row} color="none" key={row} />,
-            onSome: (b) => <Block col={col} row={row} color={b} key={row} />,
+            onSome: (b) => (
+              <Block
+                col={col}
+                row={row}
+                color={b}
+                key={row}
+                blinking={scoring.has(row)}
+              />
+            ),
           })
         )
       )}
@@ -110,12 +126,30 @@ function useGame() {
 export function GameView() {
   const game = useGame();
 
-  console.log("game", game);
   if (!game.value) {
     return <div>loading...</div>;
   }
   return (
     <div>
+      <style>
+        {`
+          .blinking {
+            animation: blink 300ms infinite;
+          }
+          @keyframes blink {
+            0% {
+              opacity: 1;
+            }
+            50% {
+              opacity: 0;
+            }
+            100% {
+              opacity: 1;
+            }
+          }
+        `}
+      </style>
+
       <div>level: {game.value.level}</div>
       <div>score: {game.value.score}</div>
       <div>status: {game.value.status}</div>
@@ -141,6 +175,7 @@ export function GameView() {
       <Board
         gameOver={game.value.status === "gameover"}
         value={game.value.playfield.board}
+        scoringLines={game.value.scoringLines}
       >
         <Piece value={game.value.playfield.piece} />
       </Board>
