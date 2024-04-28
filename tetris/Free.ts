@@ -1,19 +1,19 @@
 export class Free<T> {
-  constructor(private value: T) {}
+  constructor(private getter: () => T) {}
+
+  static create<T>(getter: () => T): Free<T> {
+    return new Free<T>(getter);
+  }
 
   static of<T>(value: T): Free<T> {
-    return new Free<T>(value);
+    return new Free<T>(() => value);
   }
 
   map<R>(fn: (value: T) => R): Free<R> {
-    return Free.of<R>(fn(this.value as T));
-  }
-
-  flatMap<R>(fn: (value: T) => Free<R>): Free<R> {
-    return fn(this.value as T);
+    return Free.create<R>(() => fn(this.getter()));
   }
 
   run() {
-    return this.value;
+    return this.getter();
   }
 }
