@@ -68,8 +68,8 @@ function Board(props: {
                 blinking={scoring.has(row)}
               />
             ),
-          })
-        )
+          }),
+        ),
       )}
       {props.children}
     </div>
@@ -90,7 +90,7 @@ function useGame() {
   const tetris = useRef(
     TetrisGame((event) => {
       setGame(event.game);
-    })
+    }),
   );
 
   useEffect(() => {
@@ -108,10 +108,12 @@ function useGame() {
     if (e.key === "ArrowDown") {
       action = "down" as const;
     }
-    if (e.key === "i") {
+    const a = new Set(["i", "a", "d"]);
+    if (a.has(e.key)) {
       action = "rotateA" as const;
     }
-    if (e.key === "o") {
+    const b = new Set(["o", "s", "f"]);
+    if (b.has(e.key)) {
       action = "rotateB" as const;
     }
     Maybe.of(action).whenSome(tetris.current.action);

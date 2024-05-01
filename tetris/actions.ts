@@ -13,14 +13,14 @@ const Flows = {
       Free.of(game.playfield.piece)
         .map(move === "left" ? Moves.left : Moves.right)
         .map((piece) =>
-          PlayFieldFactory.of(game.playfield).withPiece(piece).create()
+          PlayFieldFactory.of(game.playfield).withPiece(piece).create(),
         )
         .map(MoveValidation.validateLateralPosition)
         .map((operation) =>
           operation.fold({
             success: (p) => GameFactory.of(game).withPlayfield(p).create(),
             failure: () => game,
-          })
+          }),
         )
         .run(),
   dropPiece: (playfield: Playfield): Playfield =>
@@ -32,7 +32,7 @@ const Flows = {
         operation.fold({
           success: (updatedPlayfield) => Flows.dropPiece(updatedPlayfield),
           failure: () => playfield,
-        })
+        }),
       )
       .run(),
   rotate:
@@ -42,17 +42,17 @@ const Flows = {
         .map(
           direction === "clock"
             ? Tetriminos.clockwise
-            : Tetriminos.reverseClockwise
+            : Tetriminos.reverseClockwise,
         )
         .map((piece) =>
-          PlayFieldFactory.of(game.playfield).withPiece(piece).create()
+          PlayFieldFactory.of(game.playfield).withPiece(piece).create(),
         )
         .map(MoveValidation.validateLateralPosition)
         .map((operation) =>
           operation.fold({
             success: (p) => GameFactory.of(game).withPlayfield(p).create(),
             failure: () => game,
-          })
+          }),
         )
         .run(),
 
@@ -69,7 +69,7 @@ const Flows = {
 
     return Array.from({ length: rotations }).reduce(
       (acc: Tetrimino) => Tetriminos.clockwise(acc),
-      randomPiece
+      randomPiece,
     );
   },
 };
@@ -87,25 +87,41 @@ export const Actions = {
   levelSpeed: (game: Game) => {
     switch (game.level) {
       case 0:
-        return 1000;
-      case 1:
-        return 900;
-      case 2:
         return 800;
+      case 1:
+        return 720;
+      case 2:
+        return 630;
       case 3:
-        return 700;
+        return 550;
       case 4:
-        return 600;
+        return 470;
       case 5:
-        return 500;
+        return 380;
       case 6:
-        return 400;
-      case 7:
         return 300;
+      case 7:
+        return 220;
       case 8:
-        return 200;
-      default:
+        return 130;
+      case 9:
         return 100;
+      case 10:
+      case 11:
+      case 12:
+        return 80;
+      case 13:
+      case 14:
+      case 15:
+        return 70;
+      case 16:
+      case 17:
+      case 18:
+        return 50;
+      case 19:
+        return 30;
+      default:
+        return 20;
     }
   },
   createGame:
@@ -114,10 +130,12 @@ export const Actions = {
     (nextPiece: Tetrimino) =>
       Free.of(piece)
         .map((p) =>
-          PlayFieldFactory.create(size, p).introducePiece(piece).create()
+          PlayFieldFactory.create(size, p).introducePiece(piece).create(),
         )
         .map((playfield) =>
-          GameFactory.fromPlayfield(playfield).withNextPiece(nextPiece).create()
+          GameFactory.fromPlayfield(playfield)
+            .withNextPiece(nextPiece)
+            .create(),
         )
         .run(),
 
@@ -125,7 +143,7 @@ export const Actions = {
     Free.of(game.playfield.piece)
       .map(Moves.down)
       .map((piece) =>
-        PlayFieldFactory.of(game.playfield).withPiece(piece).create()
+        PlayFieldFactory.of(game.playfield).withPiece(piece).create(),
       )
       .map((p) =>
         MoveValidation.validateTickPosition(p).fold({
@@ -136,19 +154,19 @@ export const Actions = {
                 PlayFieldFactory.of(f)
                   .mergePiece()
                   .withPiece(TetriminoFactory.createEmpty())
-                  .create()
+                  .create(),
               )
               .map((playfield) =>
                 GameFactory.of(game)
                   .withPlayfield(playfield)
                   .withScoringLines(
-                    PlayFieldFactory.of(playfield).findCompleteLines()
+                    PlayFieldFactory.of(playfield).findCompleteLines(),
                   )
                   .withStatus("scoring")
-                  .create()
+                  .create(),
               )
               .run(),
-        })
+        }),
       )
       .run(),
   score: (game: Game): Game =>
@@ -156,7 +174,8 @@ export const Actions = {
       .map((g) => ({
         score: Free.of(g.level + 1)
           .map(
-            (level) => level * GameFactory.scoreFromLines(g.scoringLines.length)
+            (level) =>
+              level * GameFactory.scoreFromLines(g.scoringLines.length),
           )
           .map((score) => game.score + score)
           .run(),
@@ -170,7 +189,7 @@ export const Actions = {
           .withScore(ctx.score)
           .withPlayfield(ctx.playfield)
           .withStatus("scored")
-          .create()
+          .create(),
       )
       .run(),
   consolidatePiece: (game: Game): Game =>
@@ -186,7 +205,7 @@ export const Actions = {
           PlayFieldFactory.of(g.playfield)
             .introducePiece(pieceProvider())
             .cleanLines(g.scoringLines)
-            .create()
+            .create(),
         )
         .map(
           (playfield): Game =>
@@ -201,7 +220,7 @@ export const Actions = {
                   .withPlayfield(playfield)
                   .withStatus("gameover")
                   .create(),
-            })
+            }),
         )
         .run(),
 };
