@@ -87,9 +87,23 @@ function useWindowKeydown(fn: (e: KeyboardEvent) => unknown) {
 
 function useGame() {
   const [game, setGame] = useState<Game | null>(null);
+  const [fps, setFps] = useState(0);
+  const timer = useRef<number>(new Date().getTime());
   const tetris = useRef(
     TetrisGame((event) => {
-      setGame(event.game);
+      if (event.type === "fps") {
+        Maybe.of(new Date().getTime())
+          .flatMap(
+            (now): Maybe<number> =>
+              now - timer.current < 1000 ? Maybe.none() : Maybe.of(now),
+          )
+          .whenSome((now) => {
+            timer.current = now;
+            setFps(event.fps);
+          });
+      } else {
+        setGame(event.game);
+      }
     }),
   );
 
@@ -121,6 +135,7 @@ function useGame() {
 
   return {
     value: game,
+    fps,
     dispatch: tetris.current.action,
   };
 }
@@ -152,6 +167,7 @@ export function GameView() {
         `}
       </style>
 
+      <div>fps: {game.fps} FPS</div>
       <div>level: {game.value.level}</div>
       <div>score: {game.value.score}</div>
       <div>status: {game.value.status}</div>

@@ -84,46 +84,46 @@ export const Actions = {
     GameFactory.of(game)
       .withStatus(game.status === "pause" ? "playing" : "pause")
       .create(),
-  levelSpeed: (game: Game) => {
-    switch (game.level) {
-      case 0:
-        return 800;
-      case 1:
-        return 720;
-      case 2:
-        return 630;
-      case 3:
-        return 550;
-      case 4:
-        return 470;
-      case 5:
-        return 380;
-      case 6:
-        return 300;
-      case 7:
-        return 220;
-      case 8:
-        return 130;
-      case 9:
-        return 100;
-      case 10:
-      case 11:
-      case 12:
-        return 80;
-      case 13:
-      case 14:
-      case 15:
-        return 70;
-      case 16:
-      case 17:
-      case 18:
-        return 50;
-      case 19:
-        return 30;
-      default:
-        return 20;
-    }
-  },
+  // levelSpeed: (game: Game) => {
+  //   switch (game.level) {
+  //     case 0:
+  //       return 800;
+  //     case 1:
+  //       return 720;
+  //     case 2:
+  //       return 630;
+  //     case 3:
+  //       return 550;
+  //     case 4:
+  //       return 470;
+  //     case 5:
+  //       return 380;
+  //     case 6:
+  //       return 300;
+  //     case 7:
+  //       return 220;
+  //     case 8:
+  //       return 130;
+  //     case 9:
+  //       return 100;
+  //     case 10:
+  //     case 11:
+  //     case 12:
+  //       return 80;
+  //     case 13:
+  //     case 14:
+  //     case 15:
+  //       return 70;
+  //     case 16:
+  //     case 17:
+  //     case 18:
+  //       return 50;
+  //     case 19:
+  //       return 30;
+  //     default:
+  //       return 20;
+  //   }
+  // },
   createGame:
     (size: { row: number; col: number }) =>
     (piece: Tetrimino) =>

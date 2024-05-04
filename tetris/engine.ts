@@ -6,10 +6,12 @@ import { Game } from "./game";
 
 type Dispatch<E> = (event: E) => unknown;
 
-type TetrisEvent = {
-  // type: "gameover" | "scored" | "scoring" | "nextpiece" | "tick" | "action";
-  game: Game;
-};
+type TetrisEvent =
+  | {
+      type: "tick" | "action";
+      game: Game;
+    }
+  | { type: "fps"; fps: number };
 
 const SIZE = { row: 20, col: 10 };
 
@@ -20,27 +22,62 @@ const createGame = () =>
     .map((create) => create(Actions.randomTetrimo()))
     .run();
 
-// TODO: move logic to work in FPS
 class Timer {
-  timer: number;
-  status: "idle" | "waiting";
+  time: number;
+  fps: number;
+  constructor(fps: number) {
+    this.time = new Date().getTime();
+    this.fps = fps;
+  }
+  next = (): Maybe<number> => {
+    const now = new Date().getTime();
+    const diff = now - this.time;
+    const fps = Math.round(1000 / diff);
+
+    if (fps > this.fps) {
+      return Maybe.none();
+    }
+    this.time = now;
+    return Maybe.of(fps);
+  };
+}
+
+class Framer {
+  frames: number;
 
   constructor() {
-    this.timer = new Date().getTime();
-    this.status = "idle";
+    this.frames = 1;
   }
   static create() {
-    return new Timer();
+    return new Framer();
   }
-  setOverdue = (ms: number) => {
-    this.timer = new Date().getTime() + ms;
-    this.status = "waiting";
+  nextFrame = (frames: number) => {
+    this.frames = frames;
   };
-  check = () => {
-    const overtime = new Date().getTime() > this.timer;
-    const pending = this.status === "waiting";
-    if (overtime && pending) {
-      this.status = "idle";
+  nextFrameFromLevel = (level: number) => {
+    this.frames = Free.of(level)
+      .map((l) => {
+        if (l === 0) return 48;
+        if (l === 1) return 43;
+        if (l === 2) return 38;
+        if (l === 3) return 33;
+        if (l === 4) return 28;
+        if (l === 5) return 23;
+        if (l === 6) return 18;
+        if (l === 7) return 13;
+        if (l === 8) return 8;
+        if (l === 9) return 5;
+        if (l >= 10 && l <= 12) return 5;
+        if (l >= 13 && l <= 15) return 4;
+        if (l >= 16 && l <= 18) return 3;
+        if (l <= 29) return 2;
+        return 1;
+      })
+      .run();
+  };
+  next = () => {
+    this.frames -= 1;
+    if (this.frames === 0) {
       return Maybe.of(true);
     }
     return Maybe.none();
@@ -54,31 +91,36 @@ type StateEvent = {
 
 function createState(dispatch: Dispatch<StateEvent>) {
   let game = createGame();
+  const setGame = (g: Game) => (game = g);
+  const dispatchEvent = (type: StateEvent["type"]) => (game: Game) =>
+    dispatch({ type, game });
+
   return {
     get: () => game,
     update: (fn: (game: Game) => Game) => {
-      game = fn(game);
-      dispatch({ type: "update", game });
+      Maybe.some(game)
+        .map(fn)
+        .whenSome(setGame)
+        .whenSome(dispatchEvent("update"));
     },
     nextTick() {
       return Maybe.of(game.status)
         .map((status) => {
           switch (status) {
             case "playing":
-              return Actions.nextTick;
+              return Actions.nextTick(game);
             case "scoring":
-              return Actions.score;
-            case "scored":
-              return Actions.cleanupScore(Actions.randomTetrimo);
+              // TODO: merge these actions and remove the scored status
+              return Free.of(game)
+                .map(Actions.score)
+                .map(Actions.cleanupScore(Actions.randomTetrimo))
+                .run();
             default:
-              return Identity;
+              return game;
           }
         })
-        .map(Apply(game))
-        .whenSome((g) => {
-          game = g;
-        })
-        .whenSome((g) => dispatch({ type: "next", game: g }))
+        .whenSome(setGame)
+        .whenSome(dispatchEvent("next"))
         .getValue(game);
     },
     reset: () => {
@@ -90,38 +132,43 @@ function createState(dispatch: Dispatch<StateEvent>) {
 
 export function Tetris(onEvent: (event: TetrisEvent) => unknown) {
   const state = createState((event) => {
-    onEvent(event);
+    let type;
+    if (event.type === "update") {
+      type = "action" as const;
+    } else {
+      type = "tick" as const;
+    }
+    onEvent({ type, game: event.game });
   });
 
-  const timer = Timer.create();
+  const framer = Framer.create();
+  // TODO: achieve 60fps
+  const timer = new Timer(60);
+  const setFrames = (g: Game) => {
+    switch (g.status) {
+      case "scoring": {
+        const frames = g.scoringLines.length === 0 ? 5 : 30;
+        console.log("scoring", frames);
+        return framer.nextFrame(frames);
+      }
+      case "playing":
+        return framer.nextFrameFromLevel(g.level);
+    }
+  };
 
   const ticker = () => {
-    timer
-      .check()
-      .map(() => state.nextTick())
-      .flatMap((g): Maybe<number> => {
-        switch (g.status) {
-          case "scoring": {
-            return g.scoringLines.length === 0
-              ? Maybe.none()
-              : Maybe.some(3000);
-          }
-          case "playing":
-            return Maybe.some(g).map(Actions.levelSpeed);
-          case "scored":
-            return Maybe.some(0);
-          default: {
-            return Maybe.none();
-          }
-        }
-      })
-      .whenSome(timer.setOverdue),
-      requestAnimationFrame(ticker);
+    timer.next().whenSome((fps) => {
+      onEvent({ type: "fps", fps });
+      framer
+        .next()
+        .map(state.nextTick)
+        .whenSome(setFrames);
+    });
+    requestAnimationFrame(ticker);
   };
 
   return {
     start() {
-      timer.setOverdue(0);
       ticker();
     },
     action(action: "left" | "right" | "down" | "rotateA" | "rotateB") {
@@ -133,7 +180,6 @@ export function Tetris(onEvent: (event: TetrisEvent) => unknown) {
             case "right":
               return Actions.moveRight;
             case "down":
-              timer.setOverdue(167);
               return Actions.consolidatePiece;
             case "rotateA":
               return Actions.rotate;
