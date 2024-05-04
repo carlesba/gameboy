@@ -1,7 +1,7 @@
 import { Free } from "./Free";
 import { Maybe } from "./Maybe";
 import { Actions } from "./actions";
-import { Apply, Identity } from "./functional";
+import { Identity } from "./functional";
 import { Game } from "./game";
 
 type Dispatch<E> = (event: E) => unknown;
