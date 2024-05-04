@@ -37,10 +37,11 @@ const Flows = {
     (direction: "clock" | "reverse") =>
     (game: Game): Game =>
       Free.of(game.playfield.piece)
-        .map(
+        .map(TetriminoFactory.from)
+        .map((factory) =>
           direction === "clock"
-            ? Tetriminos.clockwise
-            : Tetriminos.reverseClockwise,
+            ? factory.clockwise().create()
+            : factory.reverseClockwise().create(),
         )
         .map((piece) =>
           PlayFieldFactory.of(game.playfield).withPiece(piece).create(),
@@ -55,20 +56,32 @@ const Flows = {
         .run(),
 
   getRandomTetrimono() {
-    let randomPiece = Free.of(Tetriminos.patterns)
-      .map(Object.values)
-      .map((patterns) => patterns[Math.floor(Math.random() * patterns.length)])
+    const patterns = [
+      TetriminoFactory.I,
+      TetriminoFactory.J,
+      TetriminoFactory.L,
+      TetriminoFactory.O,
+      TetriminoFactory.S,
+      TetriminoFactory.T,
+      TetriminoFactory.Z,
+    ];
+    const randomNum = (max: number) => Math.floor(Math.random() * max);
+
+    let randomPiece = Free.of(patterns.length)
+      .map(randomNum)
+      .map((randomIndex) => patterns[randomIndex]())
       .run();
 
-    const rotations = Math.floor(Math.random() * 4);
-    for (let i = 0; i < rotations; i++) {
-      randomPiece = Tetriminos.clockwise(randomPiece);
-    }
-
-    return Array.from({ length: rotations }).reduce(
-      (acc: Tetrimino) => Tetriminos.clockwise(acc),
-      randomPiece,
-    );
+    return Free.of(randomNum(4))
+      .map((length) => Array.from({ length }))
+      .map((rotations) =>
+        rotations.reduce(
+          (factory: TetriminoFactory) => factory.clockwise(),
+          TetriminoFactory.from(randomPiece),
+        ),
+      )
+      .map((factory) => factory.create())
+      .run();
   },
 };
 

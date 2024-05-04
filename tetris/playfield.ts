@@ -2,7 +2,7 @@ import { Free } from "./Free";
 import { Maybe } from "./Maybe";
 import { False, True } from "./functional";
 import { Position } from "./position";
-import { Tetrimino, Tetriminos } from "./tetrimino";
+import { Tetrimino, TetriminoFactory, Tetriminos } from "./tetrimino";
 
 type Block = string;
 
@@ -21,7 +21,7 @@ export class PlayFieldFactory {
   static create(size: Position, piece: Tetrimino) {
     return new PlayFieldFactory({
       board: Array.from({ length: size.col }, () =>
-        Array.from({ length: size.row }, () => Maybe.none())
+        Array.from({ length: size.row }, () => Maybe.none()),
       ),
       piece,
     });
@@ -33,14 +33,12 @@ export class PlayFieldFactory {
     return this.value.board[0].length;
   }
   introducePiece(piece: Tetrimino) {
-    const centeredPiece = Free.of(piece)
-      .map(
-        Tetriminos.move({
-          row: this.height() - piece.size,
-          col: Math.floor(this.value.board.length / 2 - piece.size / 2),
-        })
-      )
-      .run();
+    const centeredPiece = TetriminoFactory.from(piece)
+      .move({
+        row: this.height() - piece.size,
+        col: Math.floor(this.value.board.length / 2 - piece.size / 2),
+      })
+      .create();
 
     this.withPiece(centeredPiece);
 
@@ -57,7 +55,7 @@ export class PlayFieldFactory {
   }
   cleanLines(lines: Array<number>) {
     const filler: Maybe<string>[] = Array.from({ length: lines.length }, () =>
-      Maybe.none()
+      Maybe.none(),
     );
 
     const linesSet = new Set(lines);
@@ -67,7 +65,7 @@ export class PlayFieldFactory {
       Free.of(column)
         .map((c) => c.filter(matchingLine))
         .map((c) => c.concat(filler))
-        .run()
+        .run(),
     );
 
     return this;
@@ -84,7 +82,7 @@ export class PlayFieldFactory {
       col[line].fold({
         onSome: True,
         onNone: False,
-      })
+      }),
     );
   }
   isPositionTaken(position: Position) {
@@ -97,12 +95,12 @@ export class PlayFieldFactory {
   }
   findCompleteLines() {
     return Array.from({ length: this.height() }, (_, i) => i).filter((line) =>
-      this.isLineComplete(line)
+      this.isLineComplete(line),
     );
   }
   pieceOverlaps() {
     return this.value.piece.positions.some((position) =>
-      this.isPositionTaken(position)
+      this.isPositionTaken(position),
     );
   }
   create() {

@@ -88,6 +88,7 @@ function useWindowKeydown(fn: (e: KeyboardEvent) => unknown) {
 function useGame() {
   const [game, setGame] = useState<Game | null>(null);
   const [fps, setFps] = useState(0);
+
   const tetris = useRef(
     TetrisGame((event) => {
       if (event.type === "fps") {
@@ -157,29 +158,14 @@ export function GameView() {
           }
         `}
       </style>
-
       <div>fps: {game.fps} FPS</div>
       <div>level: {game.value.level}</div>
       <div>score: {game.value.score}</div>
       <div>status: {game.value.status}</div>
       <hr />
-
-      <div>
-        <button onClick={() => game.dispatch("left")}>left</button>
+      <div style={{ position: "relative", height: 100 , marginBottom: 20}}>
+        next piece: <Piece value={game.value.nextPiece} />
       </div>
-      <div>
-        <button onClick={() => game.dispatch("right")}>right</button>
-      </div>
-      <div>
-        <button onClick={() => game.dispatch("down")}>down</button>
-      </div>
-      <div>
-        <button onClick={() => game.dispatch("rotateA")}>rotate A</button>
-      </div>
-      <div>
-        <button onClick={() => game.dispatch("rotateB")}>rotate B</button>
-      </div>
-
       <hr />
       <Board
         gameOver={game.value.status === "gameover"}
