@@ -98,7 +98,7 @@ function createState(dispatch: Dispatch<StateEvent>) {
   return {
     get: () => game,
     update: (fn: (game: Game) => Game) => {
-      Maybe.some(game)
+      return Maybe.some(game)
         .map(fn)
         .whenSome(setGame)
         .whenSome(dispatchEvent("update"));
@@ -159,10 +159,7 @@ export function Tetris(onEvent: (event: TetrisEvent) => unknown) {
   const ticker = () => {
     timer.next().whenSome((fps) => {
       onEvent({ type: "fps", fps });
-      framer
-        .next()
-        .map(state.nextTick)
-        .whenSome(setFrames);
+      framer.next().map(state.nextTick).whenSome(setFrames);
     });
     requestAnimationFrame(ticker);
   };
@@ -172,7 +169,7 @@ export function Tetris(onEvent: (event: TetrisEvent) => unknown) {
       ticker();
     },
     action(action: "left" | "right" | "down" | "rotateA" | "rotateB") {
-      Free.of(action)
+      Maybe.of(action)
         .map((action) => {
           switch (action) {
             case "left":
@@ -189,8 +186,12 @@ export function Tetris(onEvent: (event: TetrisEvent) => unknown) {
               return Identity;
           }
         })
-        .map(state.update)
-        .run();
+        .flatMap(state.update)
+        .flatMap(
+          (g): Maybe<Game> =>
+            g.status === "scoring" ? Maybe.some(g) : Maybe.none(),
+        )
+        .whenSome(setFrames);
     },
   };
 }
