@@ -158,8 +158,11 @@ export function Tetris(onEvent: (event: TetrisEvent) => unknown) {
 
   const ticker = () => {
     timer.next().whenSome((fps) => {
-      onEvent({ type: "fps", fps });
-      framer.next().map(state.nextTick).whenSome(setFrames);
+      framer
+        .next()
+        .map(state.nextTick)
+        .whenSome(setFrames)
+        .whenSome(() => onEvent({ type: "fps", fps }));
     });
     requestAnimationFrame(ticker);
   };

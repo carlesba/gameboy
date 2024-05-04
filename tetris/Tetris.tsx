@@ -88,19 +88,10 @@ function useWindowKeydown(fn: (e: KeyboardEvent) => unknown) {
 function useGame() {
   const [game, setGame] = useState<Game | null>(null);
   const [fps, setFps] = useState(0);
-  const timer = useRef<number>(new Date().getTime());
   const tetris = useRef(
     TetrisGame((event) => {
       if (event.type === "fps") {
-        Maybe.of(new Date().getTime())
-          .flatMap(
-            (now): Maybe<number> =>
-              now - timer.current < 1000 ? Maybe.none() : Maybe.of(now),
-          )
-          .whenSome((now) => {
-            timer.current = now;
-            setFps(event.fps);
-          });
+        setFps(event.fps);
       } else {
         setGame(event.game);
       }
