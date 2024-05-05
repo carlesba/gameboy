@@ -122,12 +122,22 @@ export const Actions = {
         playfield: PlayFieldFactory.of(g.playfield)
           .cleanLines(g.scoringLines)
           .create(),
+        lines: g.lines + g.scoringLines.length,
+      }))
+      .map((ctx) => ({
+        ...ctx,
+        level: Free.of(ctx.lines)
+          .map((lines) => Math.floor(lines / 10))
+          .map((level) => Math.max(game.level, level))
+          .run(),
       }))
       .map((ctx) =>
         GameFactory.of(game)
           .withScoringLines([])
           .withScore(ctx.score)
           .withPlayfield(ctx.playfield)
+          .withLines(ctx.lines)
+          .withLevel(ctx.level)
           .withStatus("scored")
           .create(),
       )

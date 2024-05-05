@@ -14,7 +14,6 @@ class RandomBag<T> {
     return new RandomBag(bag);
   }
   next(): Maybe<T> {
-    console.log('bag length', this.bag.length);
     if (this.bag.length === 0) {
       return Maybe.none();
     }

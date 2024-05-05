@@ -179,6 +179,7 @@ export function GameView() {
       </style>
       <div>fps: {fps} FPS</div>
       <div>level: {game.level}</div>
+      <div>lines: {game.lines}</div>
       <div>score: {game.score}</div>
       <div>status: {game.status}</div>
       <hr />

@@ -7,6 +7,7 @@ export type Game = {
   level: number;
   nextPiece: Tetrimino;
   scoringLines: number[];
+  lines: number;
   status: "playing" | "pause" | "gameover" | "scoring" | "scored";
 };
 
@@ -20,6 +21,7 @@ export class GameFactory {
       playfield,
       score: 0,
       level: 0,
+      lines: 0,
       scoringLines: [],
       nextPiece: playfield.piece,
       status: "playing",
@@ -43,12 +45,6 @@ export class GameFactory {
         return 0;
     }
   }
-  // score() {
-  //   const score =
-  //     this.value.level *
-  //     GameFactory.scoreFromLines(this.value.scoringLines.length);
-  //   return GameFactory.of(this.value).withScoringLines([]).withScore(score);
-  // }
 
   withPlayfield = (playfield: Playfield) => {
     return GameFactory.of({ ...this.value, playfield });
@@ -70,6 +66,9 @@ export class GameFactory {
   };
   withNextPiece = (nextPiece: Tetrimino) => {
     return GameFactory.of({ ...this.value, nextPiece });
+  };
+  withLines = (lines: number) => {
+    return GameFactory.of({ ...this.value, lines });
   };
   create() {
     return this.value;
