@@ -16,10 +16,7 @@ export class PlayFieldFactory {
     this.value = value;
   }
   static from(playfield: Playfield) {
-    return new PlayFieldFactory({
-      board: playfield.board,
-      piece: playfield.piece,
-    });
+    return new PlayFieldFactory(playfield);
   }
   static of(size: Position, piece: Tetrimino) {
     return new PlayFieldFactory({
@@ -63,27 +60,26 @@ export class PlayFieldFactory {
     const linesSet = new Set(lines);
     const matchingLine = <T>(_r: T, index: number) => !linesSet.has(index);
 
-    this.value.board = this.value.board.map((column) =>
+    const board = this.value.board.map((column) =>
       Free.of(column)
         .map((c) => c.filter(matchingLine))
         .map((c) => c.concat(filler))
         .run(),
     );
 
+    this.value = { ...this.value, board };
+
     return this;
-  }
-  renewBoard() {
-    this.value = {
-      ...this.value,
-      board: this.value.board.map((col) => col.concat()),
-    };
   }
   mergePiece() {
     const block = Maybe.of(this.value.piece.color);
-    this.renewBoard();
+
+    const board = this.value.board.map((col) => col.concat());
     this.value.piece.positions.forEach((p) => {
-      this.value.board[p.col][p.row] = block;
+      board[p.col][p.row] = block;
     });
+    this.value = { ...this.value, board };
+
     return this;
   }
   isLineComplete(line: number) {
