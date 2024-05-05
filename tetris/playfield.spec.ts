@@ -18,7 +18,7 @@ OO
 OX
 `);
     const output = Free.of(Test.fromText(input, Test.dotPiece))
-      .map((field) => PlayFieldFactory.of(field).cleanLines([0]).create())
+      .map((field) => PlayFieldFactory.from(field).cleanLines([0]).create())
       .map(Test.render)
       .run();
 
@@ -41,7 +41,7 @@ OO
 OX
 `);
     const output = Free.of(Test.fromText(input, Test.dotPiece))
-      .map((field) => PlayFieldFactory.of(field).cleanLines([0, 2]).create())
+      .map((field) => PlayFieldFactory.from(field).cleanLines([0, 2]).create())
       .map(Test.render)
       .run();
 

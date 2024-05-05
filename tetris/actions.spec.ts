@@ -26,12 +26,12 @@ describe("consolidate", () => {
         //     console.log(g.piece);
         //   })
         // )
-        .map((field) => GameFactory.fromPlayfield(field).create())
+        .map((field) => GameFactory.empty().withPlayfield(field).create())
         .map(Actions.consolidatePiece)
         .map(
           tap((g) => {
             expect(g.status).toBe("scoring");
-          })
+          }),
         )
         .map((g) => g.playfield)
         .map(Test.render)
@@ -69,8 +69,7 @@ describe("Scoring sequence", () => {
 
   let game = Free.of(a)
     .map((p) => Test.fromText(p, Test.dotPiece))
-    .map(GameFactory.fromPlayfield)
-    .map((f) => f.create())
+    .map((field) => GameFactory.empty().withPlayfield(field).create())
     .run();
 
   test("piece gets merged into playfield after landing", () => {
@@ -87,7 +86,7 @@ describe("Scoring sequence", () => {
     expect(game.playfield.piece.size).toBe(0);
   });
 
-  test("updateScore", ()=> {
+  test("updateScore", () => {
     game = Actions.score(game);
     expect(game.score).toBe(100);
     expect(game.status).toBe("scored");
@@ -98,6 +97,5 @@ describe("Scoring sequence", () => {
               OO
               OO`);
     expect(Test.render(game.playfield)).toBe(c);
-
   });
 });

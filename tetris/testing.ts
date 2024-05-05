@@ -63,7 +63,7 @@ export const Test = {
       .map(Matrix.reverseVertically)
       .map(Matrix.transpose)
       .map((board) =>
-        PlayFieldFactory.of({
+        PlayFieldFactory.from({
           board,
           piece,
         }).create(),

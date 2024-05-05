@@ -11,7 +11,7 @@ const Flows = {
       Free.of(game.playfield.piece)
         .map(move === "left" ? Moves.left : Moves.right)
         .map((piece) =>
-          PlayFieldFactory.of(game.playfield).withPiece(piece).create(),
+          PlayFieldFactory.from(game.playfield).withPiece(piece).create(),
         )
         .map(MoveValidation.validateLateralPosition)
         .map((operation) =>
@@ -24,7 +24,7 @@ const Flows = {
   dropPiece: (playfield: Playfield): Playfield =>
     Free.of(playfield.piece)
       .map(Moves.down)
-      .map((piece) => PlayFieldFactory.of(playfield).withPiece(piece).create())
+      .map((piece) => PlayFieldFactory.from(playfield).withPiece(piece).create())
       .map(MoveValidation.validateTickPosition)
       .map((operation) =>
         operation.fold({
@@ -43,7 +43,7 @@ const Flows = {
             : TetriminoFactory.from(piece).reverseClockwise().create(),
         )
         .map((piece) =>
-          PlayFieldFactory.of(game.playfield).withPiece(piece).create(),
+          PlayFieldFactory.from(game.playfield).withPiece(piece).create(),
         )
         .map(MoveValidation.validateLateralPosition)
         .map((operation) =>
@@ -70,10 +70,10 @@ export const Actions = {
     (nextPiece: Tetrimino) =>
       Free.of(piece)
         .map((p) =>
-          PlayFieldFactory.create(size, p).introducePiece(piece).create(),
+          PlayFieldFactory.of(size, p).introducePiece(piece).create(),
         )
         .map((playfield) =>
-          GameFactory.fromPlayfield(playfield)
+          GameFactory.empty().withPlayfield(playfield)
             .withNextPiece(nextPiece)
             .create(),
         )
@@ -83,7 +83,7 @@ export const Actions = {
     Free.of(game.playfield.piece)
       .map(Moves.down)
       .map((piece) =>
-        PlayFieldFactory.of(game.playfield).withPiece(piece).create(),
+        PlayFieldFactory.from(game.playfield).withPiece(piece).create(),
       )
       .map((p) =>
         MoveValidation.validateTickPosition(p).fold({
@@ -91,7 +91,7 @@ export const Actions = {
           failure: () =>
             Free.of(game.playfield)
               .map((f) =>
-                PlayFieldFactory.of(f)
+                PlayFieldFactory.from(f)
                   .mergePiece()
                   .withPiece(TetriminoFactory.createEmpty())
                   .create(),
@@ -100,7 +100,7 @@ export const Actions = {
                 GameFactory.of(game)
                   .withPlayfield(playfield)
                   .withScoringLines(
-                    PlayFieldFactory.of(playfield).findCompleteLines(),
+                    PlayFieldFactory.from(playfield).findCompleteLines(),
                   )
                   .withStatus("scoring")
                   .create(),
@@ -119,7 +119,7 @@ export const Actions = {
           )
           .map((score) => game.score + score)
           .run(),
-        playfield: PlayFieldFactory.of(g.playfield)
+        playfield: PlayFieldFactory.from(g.playfield)
           .cleanLines(g.scoringLines)
           .create(),
         lines: g.lines + g.scoringLines.length,
@@ -152,7 +152,7 @@ export const Actions = {
     (game: Game): Game =>
       Free.of(game)
         .map((g) =>
-          PlayFieldFactory.of(g.playfield)
+          PlayFieldFactory.from(g.playfield)
             .introducePiece(game.nextPiece)
             .cleanLines(g.scoringLines)
             .create(),

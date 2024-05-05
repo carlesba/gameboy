@@ -15,19 +15,23 @@ export class PlayFieldFactory {
   constructor(value: Playfield) {
     this.value = value;
   }
-  static of(playfield: Playfield) {
+  static from(playfield: Playfield) {
     return new PlayFieldFactory({
       board: playfield.board,
       piece: playfield.piece,
     });
   }
-  static create(size: Position, piece: Tetrimino) {
+  static of(size: Position, piece: Tetrimino) {
     return new PlayFieldFactory({
       board: Array.from({ length: size.col }, () =>
         Array.from({ length: size.row }, () => Maybe.none()),
       ),
       piece,
     });
+  }
+
+  static empty() {
+    return PlayFieldFactory.of({ col: 10, row: 20 }, TetriminoFactory.empty());
   }
   width() {
     return this.value.board.length;

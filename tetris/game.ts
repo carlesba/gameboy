@@ -1,5 +1,5 @@
-import { Playfield } from "./playfield";
-import { Tetrimino } from "./tetrimino";
+import { PlayFieldFactory, Playfield } from "./playfield";
+import { Tetrimino, TetriminoFactory } from "./tetrimino";
 
 export type Game = {
   playfield: Playfield;
@@ -14,16 +14,16 @@ export type Game = {
 export class GameFactory {
   private value: Game;
   constructor(game: Game) {
-    this.value = game;
+    this.value = { ...game };
   }
-  static fromPlayfield(playfield: Playfield) {
+  static empty() {
     return new GameFactory({
-      playfield,
+      playfield: PlayFieldFactory.empty().create(),
       score: 0,
       level: 0,
       lines: 0,
       scoringLines: [],
-      nextPiece: playfield.piece,
+      nextPiece: TetriminoFactory.empty(),
       status: "playing",
     });
   }
@@ -45,30 +45,37 @@ export class GameFactory {
         return 0;
     }
   }
-
   withPlayfield = (playfield: Playfield) => {
-    return GameFactory.of({ ...this.value, playfield });
+    this.value.playfield = playfield;
+    return this;
   };
   withScore = (score: number) => {
-    return GameFactory.of({ ...this.value, score });
+    this.value.score = score;
+    return this;
   };
   withScoringLines = (scoringLines: number[]) => {
-    return GameFactory.of({ ...this.value, scoringLines });
+    this.value.scoringLines = scoringLines;
+    return this;
   };
   cleanScoringLines = () => {
-    return GameFactory.of({ ...this.value, scoringLines: [] });
+    this.value.scoringLines = [];
+    return this;
   };
   withLevel = (level: number) => {
-    return GameFactory.of({ ...this.value, level });
+    this.value.level = level;
+    return this;
   };
   withStatus = (status: Game["status"]) => {
-    return GameFactory.of({ ...this.value, status });
+    this.value.status = status;
+    return this;
   };
   withNextPiece = (nextPiece: Tetrimino) => {
-    return GameFactory.of({ ...this.value, nextPiece });
+    this.value.nextPiece = nextPiece;
+    return this;
   };
   withLines = (lines: number) => {
-    return GameFactory.of({ ...this.value, lines });
+    this.value.lines = lines;
+    return this;
   };
   create() {
     return this.value;

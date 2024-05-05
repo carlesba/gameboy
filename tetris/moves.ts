@@ -17,7 +17,7 @@ export const MoveValidation = {
   operation: createOperation<Playfield, "touch" | "boundaries">(),
 
   withinLateralBoundaries: (playfield: Playfield) =>
-    Free.of(PlayFieldFactory.of(playfield).width())
+    Free.of(PlayFieldFactory.from(playfield).width())
       .map((width) => ({
         validateBoundaries: Positions.withinLateralBoundaries(width),
         positions: playfield.piece.positions,
@@ -30,7 +30,7 @@ export const MoveValidation = {
       .run(),
 
   overlap: (playfield: Playfield) =>
-    Free.of(PlayFieldFactory.of(playfield).pieceOverlaps())
+    Free.of(PlayFieldFactory.from(playfield).pieceOverlaps())
       .map((overlaps) =>
         overlaps
           ? MoveValidation.operation.failure("touch")

@@ -36,6 +36,10 @@ export class TetriminoFactory {
     return new TetriminoFactory(idProvider.next(), size, color);
   }
 
+  static empty(){
+    return new TetriminoFactory(idProvider.next(), 0, "none").create();
+  }
+
   static from(tetrimino: Tetrimino) {
     return new TetriminoFactory(tetrimino.id, tetrimino.size, tetrimino.color)
       .withPositionsList(tetrimino.positions)
