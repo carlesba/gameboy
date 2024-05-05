@@ -14,7 +14,7 @@ export type Game = {
 export class GameFactory {
   private value: Game;
   constructor(game: Game) {
-    this.value = { ...game };
+    this.value = game;
   }
   static empty() {
     return new GameFactory({
@@ -46,35 +46,35 @@ export class GameFactory {
     }
   }
   withPlayfield = (playfield: Playfield) => {
-    this.value.playfield = playfield;
+    this.value = { ...this.value, playfield };
     return this;
   };
   withScore = (score: number) => {
-    this.value.score = score;
+    this.value = { ...this.value, score };
     return this;
   };
   withScoringLines = (scoringLines: number[]) => {
-    this.value.scoringLines = scoringLines;
+    this.value = { ...this.value, scoringLines };
     return this;
   };
   cleanScoringLines = () => {
-    this.value.scoringLines = [];
+    this.value = { ...this.value, scoringLines: [] };
     return this;
   };
   withLevel = (level: number) => {
-    this.value.level = level;
+    this.value = { ...this.value, level };
     return this;
   };
   withStatus = (status: Game["status"]) => {
-    this.value.status = status;
+    this.value = { ...this.value, status };
     return this;
   };
   withNextPiece = (nextPiece: Tetrimino) => {
-    this.value.nextPiece = nextPiece;
+    this.value = { ...this.value, nextPiece };
     return this;
   };
   withLines = (lines: number) => {
-    this.value.lines = lines;
+    this.value = { ...this.value, lines };
     return this;
   };
   create() {
