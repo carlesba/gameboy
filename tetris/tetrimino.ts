@@ -1,17 +1,19 @@
-import { Free } from "./Free";
+import { IdProvider } from "./ids";
 import { Position, Positions } from "./position";
 
 export type Tetrimino = {
-  id: Symbol;
+  id: string;
   color: string;
   size: number;
   origin: Position;
   positions: Array<Position>;
 };
 
+const idProvider = new IdProvider();
+
 export class TetriminoFactory {
   value: Tetrimino;
-  constructor(id: Symbol, size: number, color: string) {
+  constructor(id: string, size: number, color: string) {
     this.value = {
       id,
       size,
@@ -20,23 +22,20 @@ export class TetriminoFactory {
       positions: [],
     };
   }
-  static of(size: number, color: string) {
-    return new TetriminoFactory(Symbol(), size, color);
-  }
-  static emptyFrom(tetrimono: Tetrimino) {
-    return new TetriminoFactory(tetrimono.id, tetrimono.size, tetrimono.color);
+  static create(size: number, color: string) {
+    return new TetriminoFactory(idProvider.next(), size, color);
   }
 
   static from(tetrimino: Tetrimino) {
-    return TetriminoFactory.emptyFrom(tetrimino)
+    return new TetriminoFactory(tetrimino.id, tetrimino.size, tetrimino.color)
       .withPositionsList(tetrimino.positions)
       .withOrigin(tetrimino.origin);
   }
   static createEmpty() {
-    return new TetriminoFactory(Symbol(), 0, "none").create();
+    return new TetriminoFactory(idProvider.next(), 0, "none").create();
   }
   static I() {
-    return TetriminoFactory.of(4, "red")
+    return TetriminoFactory.create(4, "red")
       .withPosition({ row: 1, col: 0 })
       .withPosition({ row: 1, col: 1 })
       .withPosition({ row: 1, col: 2 })
@@ -44,7 +43,7 @@ export class TetriminoFactory {
       .create();
   }
   static Z() {
-    return TetriminoFactory.of(3, "red")
+    return TetriminoFactory.create(3, "red")
       .withPosition({ row: 0, col: 0 })
       .withPosition({ row: 0, col: 1 })
       .withPosition({ row: 1, col: 1 })
@@ -52,7 +51,7 @@ export class TetriminoFactory {
       .create();
   }
   static S() {
-    return TetriminoFactory.of(3, "red")
+    return TetriminoFactory.create(3, "red")
       .withPosition({ row: 0, col: 1 })
       .withPosition({ row: 0, col: 2 })
       .withPosition({ row: 1, col: 1 })
@@ -60,7 +59,7 @@ export class TetriminoFactory {
       .create();
   }
   static O() {
-    return TetriminoFactory.of(2, "red")
+    return TetriminoFactory.create(2, "red")
       .withPosition({ row: 0, col: 0 })
       .withPosition({ row: 0, col: 1 })
       .withPosition({ row: 1, col: 0 })
@@ -68,7 +67,7 @@ export class TetriminoFactory {
       .create();
   }
   static L() {
-    return TetriminoFactory.of(3, "red")
+    return TetriminoFactory.create(3, "red")
       .withPosition({ row: 0, col: 0 })
       .withPosition({ row: 0, col: 1 })
       .withPosition({ row: 1, col: 1 })
@@ -76,7 +75,7 @@ export class TetriminoFactory {
       .create();
   }
   static J() {
-    return TetriminoFactory.of(3, "red")
+    return TetriminoFactory.create(3, "red")
       .withPosition({ row: 0, col: 2 })
       .withPosition({ row: 0, col: 1 })
       .withPosition({ row: 1, col: 1 })
@@ -84,7 +83,7 @@ export class TetriminoFactory {
       .create();
   }
   static F() {
-    return TetriminoFactory.of(3, "red")
+    return TetriminoFactory.create(3, "red")
       .withPosition({ row: 0, col: 2 })
       .withPosition({ row: 0, col: 1 })
       .withPosition({ row: 1, col: 1 })
@@ -92,7 +91,7 @@ export class TetriminoFactory {
       .create();
   }
   static T() {
-    return TetriminoFactory.of(3, "red")
+    return TetriminoFactory.create(3, "red")
       .withPosition({ row: 1, col: 0 })
       .withPosition({ row: 1, col: 1 })
       .withPosition({ row: 1, col: 2 })
@@ -106,42 +105,31 @@ export class TetriminoFactory {
       (aa) => !!a.positions.find(Positions.equals(aa)),
     );
   };
-  newId = () => {
-    this.value.id = Symbol();
-    return this;
-  };
   withPosition = (p: Position) => {
-    this.value.positions.push(p);
+    this.value = { ...this.value, positions: this.value.positions.concat(p) };
     return this;
   };
   updatePositions = (fn: (p: Array<Position>) => Array<Position>) => {
-    this.value.positions = fn(this.value.positions);
+    this.value = { ...this.value, positions: fn(this.value.positions) };
     return this;
   };
   withPositionsList = (p: Array<Position>) => {
-    this.value.positions = p;
+    this.value = { ...this.value, positions: p.concat() };
     return this;
   };
-  withOrigin = (p: Position) => {
-    this.value.origin = p;
+  withOrigin = (origin: Position) => {
+    this.value = { ...this.value, origin };
     return this;
   };
   move = (diff: Position) => {
-    const piece = this.value;
-
     const moveDiff = Positions.add(diff);
 
-    const factory = TetriminoFactory.of(piece.size, piece.color);
-
-    Free.of(piece.origin).map(moveDiff).map(factory.withOrigin).run();
-
-    piece.positions.forEach((pos) =>
-      Free.of(pos).map(moveDiff).map(factory.withPosition).run(),
-    );
-    return factory;
+    return TetriminoFactory.from(this.value)
+      .updatePositions((p) => p.map(moveDiff))
+      .withOrigin(moveDiff(this.value.origin));
   };
   normalizePosition = () => {
-    const diff = Positions.inverse(this.value.origin);
+    const diff = Positions.negative(this.value.origin);
     return TetriminoFactory.from(this.value).move(diff);
   };
   denormalizePosition = (origin: Position) => {

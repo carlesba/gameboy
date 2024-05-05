@@ -89,7 +89,8 @@ function useGame() {
   const [game, setGame] = useState<Game | null>(null);
   const [fps, setFps] = useState(0);
 
-  const tetris = useRef(
+  // const tetrisAction = useRef<Maybe<TetrisAction>>(Maybe.none());
+  const [tetris] = useState(() =>
     TetrisGame((event) => {
       if (event.type === "fps") {
         setFps(event.fps);
@@ -100,8 +101,8 @@ function useGame() {
   );
 
   useEffect(() => {
-    tetris.current.start();
-  }, []);
+    tetris.start();
+  }, [tetris]);
 
   useWindowKeydown((e) => {
     let action;
@@ -122,20 +123,33 @@ function useGame() {
     if (b.has(e.key)) {
       action = "rotateB" as const;
     }
-    Maybe.of(action).whenSome(tetris.current.action);
+    Maybe.some(tetris.action).whenSome((dispatch) => {
+      if (e.key === "ArrowLeft") {
+        return dispatch("left");
+      }
+      if (e.key === "ArrowRight") {
+        return dispatch("right");
+      }
+      if (e.key === "ArrowDown") {
+        return dispatch("down");
+      }
+      const a = new Set(["i", "a", "d"]);
+      if (a.has(e.key)) {
+        return dispatch("rotateA");
+      }
+      const b = new Set(["o", "s", "f"]);
+      if (b.has(e.key)) {
+        return dispatch("rotateB");
+      }
+    });
   });
 
-  return {
-    value: game,
-    fps,
-    dispatch: tetris.current.action,
-  };
+  return [game, fps] as const;
 }
-
 export function GameView() {
-  const game = useGame();
+  const [game, fps] = useGame();
 
-  if (!game.value) {
+  if (!game) {
     return <div>loading...</div>;
   }
   return (
@@ -158,21 +172,21 @@ export function GameView() {
           }
         `}
       </style>
-      <div>fps: {game.fps} FPS</div>
-      <div>level: {game.value.level}</div>
-      <div>score: {game.value.score}</div>
-      <div>status: {game.value.status}</div>
+      <div>fps: {fps} FPS</div>
+      <div>level: {game.level}</div>
+      <div>score: {game.score}</div>
+      <div>status: {game.status}</div>
       <hr />
-      <div style={{ position: "relative", height: 100 , marginBottom: 20}}>
-        next piece: <Piece value={game.value.nextPiece} />
+      <div style={{ position: "relative", height: 100, marginBottom: 20 }}>
+        next piece: <Piece key={game.nextPiece.id} value={game.nextPiece} />
       </div>
       <hr />
       <Board
-        gameOver={game.value.status === "gameover"}
-        value={game.value.playfield.board}
-        scoringLines={game.value.scoringLines}
+        gameOver={game.status === "gameover"}
+        value={game.playfield.board}
+        scoringLines={game.scoringLines}
       >
-        <Piece value={game.value.playfield.piece} />
+        <Piece key={game.playfield.piece.id} value={game.playfield.piece} />
       </Board>
     </div>
   );

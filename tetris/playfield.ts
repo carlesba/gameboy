@@ -16,7 +16,10 @@ export class PlayFieldFactory {
     this.value = value;
   }
   static of(playfield: Playfield) {
-    return new PlayFieldFactory(playfield);
+    return new PlayFieldFactory({
+      board: playfield.board,
+      piece: playfield.piece,
+    });
   }
   static create(size: Position, piece: Tetrimino) {
     return new PlayFieldFactory({
@@ -44,11 +47,6 @@ export class PlayFieldFactory {
 
     return this;
   }
-  updatePosition(position: Position, value: Maybe<Block>) {
-    this.value.board = this.value.board.map((col) => col.concat());
-    this.value.board[position.col][position.row] = value;
-    return this;
-  }
   withPiece(piece: Tetrimino) {
     this.value = { ...this.value, piece };
     return this;
@@ -70,10 +68,17 @@ export class PlayFieldFactory {
 
     return this;
   }
+  renewBoard() {
+    this.value = {
+      ...this.value,
+      board: this.value.board.map((col) => col.concat()),
+    };
+  }
   mergePiece() {
     const block = Maybe.of(this.value.piece.color);
+    this.renewBoard();
     this.value.piece.positions.forEach((p) => {
-      this.updatePosition(p, block);
+      this.value.board[p.col][p.row] = block;
     });
     return this;
   }

@@ -148,7 +148,6 @@ export function Tetris(onEvent: (event: TetrisEvent) => unknown) {
     switch (g.status) {
       case "scoring": {
         const frames = g.scoringLines.length === 0 ? 5 : 30;
-        console.log("scoring", frames);
         return framer.nextFrame(frames);
       }
       case "playing":

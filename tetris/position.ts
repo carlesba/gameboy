@@ -11,7 +11,7 @@ export const Positions = {
       .map((x) => ({ row: x[0], col: x[1] }))
       .run(),
 
-  inverse: (p: Position): Position => ({
+  negative: (p: Position): Position => ({
     row: -p.row,
     col: -p.col,
   }),

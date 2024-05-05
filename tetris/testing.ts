@@ -17,13 +17,13 @@ const Matrix = {
 const block = Maybe.some<string>(color);
 
 export const Test = {
-  flatPiece: TetriminoFactory.of(2, color)
+  flatPiece: TetriminoFactory.create(2, color)
     .withPosition({ row: 0, col: 0 })
     .withPosition({ row: 0, col: 1 })
     .move({ row: 4, col: 0 })
     .create(),
 
-  dotPiece: TetriminoFactory.of(2, color)
+  dotPiece: TetriminoFactory.create(2, color)
     .withPosition({ row: 0, col: 0 })
     .move({ row: 4, col: 0 })
     .create(),

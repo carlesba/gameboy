@@ -2,7 +2,7 @@ import { Free } from "./Free";
 import { Game, GameFactory } from "./game";
 import { MoveValidation, Moves } from "./moves";
 import { PlayFieldFactory, Playfield } from "./playfield";
-import { Tetrimino, TetriminoFactory, Tetriminos } from "./tetrimino";
+import { Tetrimino, TetriminoFactory } from "./tetrimino";
 
 const Flows = {
   lateral:
@@ -37,11 +37,10 @@ const Flows = {
     (direction: "clock" | "reverse") =>
     (game: Game): Game =>
       Free.of(game.playfield.piece)
-        .map(TetriminoFactory.from)
-        .map((factory) =>
+        .map((piece) =>
           direction === "clock"
-            ? factory.clockwise().create()
-            : factory.reverseClockwise().create(),
+            ? TetriminoFactory.from(piece).clockwise().create()
+            : TetriminoFactory.from(piece).reverseClockwise().create(),
         )
         .map((piece) =>
           PlayFieldFactory.of(game.playfield).withPiece(piece).create(),
