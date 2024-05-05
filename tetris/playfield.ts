@@ -2,9 +2,9 @@ import { Free } from "./Free";
 import { Maybe } from "./Maybe";
 import { False, True } from "./functional";
 import { Position } from "./position";
-import { Tetrimino, TetriminoFactory } from "./tetrimino";
+import { Color, Tetrimino, TetriminoFactory } from "./tetrimino";
 
-type Block = string;
+type Block = Color;
 
 export type Playfield = {
   board: Array<Array<Maybe<Block>>>;
@@ -52,7 +52,7 @@ export class PlayFieldFactory {
     return this;
   }
   cleanLines(lines: Array<number>) {
-    const filler: Maybe<string>[] = Array.from({ length: lines.length }, () =>
+    const filler: Maybe<Color>[] = Array.from({ length: lines.length }, () =>
       Maybe.none(),
     );
 

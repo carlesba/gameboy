@@ -1,12 +1,12 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { Game, Maybe, Tetris as TetrisGame } from "@/tetris";
+import { useEffect, useState } from "react";
+import { Game, Maybe, Tetris as TetrisGame, Color, Free } from "@/tetris";
 
 const BLOCK_SIZE = 20;
 function Block(props: {
   row: number;
   col: number;
-  color: string;
+  color: Color;
   blinking?: boolean;
 }) {
   return (
@@ -23,7 +23,12 @@ function Block(props: {
         width: `${BLOCK_SIZE}px`,
         height: `${BLOCK_SIZE}px`,
         outline: "1px solid gray",
-        background: props.color === "none" ? "" : props.color,
+        background: Free.of(props.color)
+          .map((color) => {
+            if (color === "none") return "transparent";
+            return color;
+          })
+          .run(),
       }}
     ></div>
   );

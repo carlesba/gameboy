@@ -1,9 +1,11 @@
 import { IdProvider } from "./ids";
 import { Position, Positions } from "./position";
 
+export type Color= 'none' | 'cyan' | 'red' |'yellow' | 'green' | 'blue' | 'purple' | 'orange';
+
 export type Tetrimino = {
   id: string;
-  color: string;
+  color: Color
   size: number;
   origin: Position;
   positions: Array<Position>;
@@ -13,7 +15,7 @@ const idProvider = new IdProvider();
 
 export class TetriminoFactory {
   value: Tetrimino;
-  constructor(id: string, size: number, color: string) {
+  constructor(id: string, size: number, color: Color) {
     this.value = {
       id,
       size,
@@ -22,7 +24,7 @@ export class TetriminoFactory {
       positions: [],
     };
   }
-  static create(size: number, color: string) {
+  static create(size: number, color: Color) {
     return new TetriminoFactory(idProvider.next(), size, color);
   }
 
@@ -35,7 +37,7 @@ export class TetriminoFactory {
     return new TetriminoFactory(idProvider.next(), 0, "none").create();
   }
   static I() {
-    return TetriminoFactory.create(4, "red")
+    return TetriminoFactory.create(4, "cyan")
       .withPosition({ row: 1, col: 0 })
       .withPosition({ row: 1, col: 1 })
       .withPosition({ row: 1, col: 2 })
@@ -51,7 +53,7 @@ export class TetriminoFactory {
       .create();
   }
   static S() {
-    return TetriminoFactory.create(3, "red")
+    return TetriminoFactory.create(3, "green")
       .withPosition({ row: 0, col: 1 })
       .withPosition({ row: 0, col: 2 })
       .withPosition({ row: 1, col: 1 })
@@ -59,7 +61,7 @@ export class TetriminoFactory {
       .create();
   }
   static O() {
-    return TetriminoFactory.create(2, "red")
+    return TetriminoFactory.create(2, "yellow")
       .withPosition({ row: 0, col: 0 })
       .withPosition({ row: 0, col: 1 })
       .withPosition({ row: 1, col: 0 })
@@ -67,7 +69,7 @@ export class TetriminoFactory {
       .create();
   }
   static L() {
-    return TetriminoFactory.create(3, "red")
+    return TetriminoFactory.create(3, "orange")
       .withPosition({ row: 0, col: 0 })
       .withPosition({ row: 0, col: 1 })
       .withPosition({ row: 1, col: 1 })
@@ -75,15 +77,7 @@ export class TetriminoFactory {
       .create();
   }
   static J() {
-    return TetriminoFactory.create(3, "red")
-      .withPosition({ row: 0, col: 2 })
-      .withPosition({ row: 0, col: 1 })
-      .withPosition({ row: 1, col: 1 })
-      .withPosition({ row: 2, col: 1 })
-      .create();
-  }
-  static F() {
-    return TetriminoFactory.create(3, "red")
+    return TetriminoFactory.create(3, "blue")
       .withPosition({ row: 0, col: 2 })
       .withPosition({ row: 0, col: 1 })
       .withPosition({ row: 1, col: 1 })
@@ -91,7 +85,7 @@ export class TetriminoFactory {
       .create();
   }
   static T() {
-    return TetriminoFactory.create(3, "red")
+    return TetriminoFactory.create(3, "purple")
       .withPosition({ row: 1, col: 0 })
       .withPosition({ row: 1, col: 1 })
       .withPosition({ row: 1, col: 2 })

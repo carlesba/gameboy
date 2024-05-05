@@ -1,9 +1,9 @@
 import { Free } from "./Free";
 import { Maybe } from "./Maybe";
 import { PlayFieldFactory, Playfield } from "./playfield";
-import { TetriminoFactory } from "./tetrimino";
+import { Color, TetriminoFactory } from "./tetrimino";
 
-const color = "red";
+const color: Color = "red";
 
 const Matrix = {
   transpose<T>(matrix: T[][]): T[][] {
@@ -14,7 +14,7 @@ const Matrix = {
   },
 };
 
-const block = Maybe.some<string>(color);
+const block = Maybe.some(color);
 
 export const Test = {
   flatPiece: TetriminoFactory.create(2, color)
@@ -53,12 +53,12 @@ export const Test = {
           row
             .split("")
             .map(
-              (cell): Maybe<string> =>
-                Maybe.of(cell).flatMap((c) =>
-                  c === "O" ? Maybe.none() : block
-                )
-            )
-        )
+              (cell): Maybe<Color> =>
+                Maybe.of(cell).flatMap(
+                  (c): Maybe<Color> => (c === "O" ? Maybe.none() : block),
+                ),
+            ),
+        ),
       )
       .map(Matrix.reverseVertically)
       .map(Matrix.transpose)
@@ -66,7 +66,7 @@ export const Test = {
         PlayFieldFactory.of({
           board,
           piece,
-        }).create()
+        }).create(),
       )
       .run();
   },
