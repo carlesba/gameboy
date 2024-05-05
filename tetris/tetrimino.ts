@@ -1,11 +1,19 @@
 import { IdProvider } from "./ids";
 import { Position, Positions } from "./position";
 
-export type Color= 'none' | 'cyan' | 'red' |'yellow' | 'green' | 'blue' | 'purple' | 'orange';
+export type Color =
+  | "none"
+  | "cyan"
+  | "red"
+  | "yellow"
+  | "green"
+  | "blue"
+  | "purple"
+  | "orange";
 
 export type Tetrimino = {
   id: string;
-  color: Color
+  color: Color;
   size: number;
   origin: Position;
   positions: Array<Position>;
@@ -41,56 +49,49 @@ export class TetriminoFactory {
       .withPosition({ row: 1, col: 0 })
       .withPosition({ row: 1, col: 1 })
       .withPosition({ row: 1, col: 2 })
-      .withPosition({ row: 1, col: 3 })
-      .create();
+      .withPosition({ row: 1, col: 3 });
   }
   static Z() {
     return TetriminoFactory.create(3, "red")
       .withPosition({ row: 0, col: 0 })
       .withPosition({ row: 0, col: 1 })
       .withPosition({ row: 1, col: 1 })
-      .withPosition({ row: 1, col: 2 })
-      .create();
+      .withPosition({ row: 1, col: 2 });
   }
   static S() {
     return TetriminoFactory.create(3, "green")
       .withPosition({ row: 0, col: 1 })
       .withPosition({ row: 0, col: 2 })
       .withPosition({ row: 1, col: 1 })
-      .withPosition({ row: 1, col: 0 })
-      .create();
+      .withPosition({ row: 1, col: 0 });
   }
   static O() {
     return TetriminoFactory.create(2, "yellow")
       .withPosition({ row: 0, col: 0 })
       .withPosition({ row: 0, col: 1 })
       .withPosition({ row: 1, col: 0 })
-      .withPosition({ row: 1, col: 1 })
-      .create();
+      .withPosition({ row: 1, col: 1 });
   }
   static L() {
     return TetriminoFactory.create(3, "orange")
       .withPosition({ row: 0, col: 0 })
       .withPosition({ row: 0, col: 1 })
       .withPosition({ row: 1, col: 1 })
-      .withPosition({ row: 2, col: 1 })
-      .create();
+      .withPosition({ row: 2, col: 1 });
   }
   static J() {
     return TetriminoFactory.create(3, "blue")
       .withPosition({ row: 0, col: 2 })
       .withPosition({ row: 0, col: 1 })
       .withPosition({ row: 1, col: 1 })
-      .withPosition({ row: 2, col: 1 })
-      .create();
+      .withPosition({ row: 2, col: 1 });
   }
   static T() {
     return TetriminoFactory.create(3, "purple")
       .withPosition({ row: 1, col: 0 })
       .withPosition({ row: 1, col: 1 })
       .withPosition({ row: 1, col: 2 })
-      .withPosition({ row: 2, col: 1 })
-      .create();
+      .withPosition({ row: 2, col: 1 });
   }
   equals = (a: Tetrimino) => {
     if (this.value.color !== a.color) return false;

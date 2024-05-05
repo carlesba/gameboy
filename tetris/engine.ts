@@ -3,6 +3,8 @@ import { Maybe } from "./Maybe";
 import { Actions } from "./actions";
 import { Identity } from "./functional";
 import { Game } from "./game";
+import { TetriminoProvider } from "./tetriminoProvider";
+import { Tetrimino } from "./tetrimino";
 
 type Dispatch<E> = (event: E) => unknown;
 
@@ -15,11 +17,11 @@ type TetrisEvent =
 
 const SIZE = { row: 20, col: 10 };
 
-const createGame = () =>
+const createGame = (tetriminoProvider: () => Tetrimino) =>
   Free.of(Actions.createGame)
     .map((create) => create(SIZE))
-    .map((create) => create(Actions.randomTetrimo()))
-    .map((create) => create(Actions.randomTetrimo()))
+    .map((create) => create(tetriminoProvider()))
+    .map((create) => create(tetriminoProvider()))
     .run();
 
 class Timer {
@@ -90,7 +92,10 @@ type StateEvent = {
 };
 
 function createState(dispatch: Dispatch<StateEvent>) {
-  let game = createGame();
+  const tetriminoProvider = new TetriminoProvider();
+
+  let game = createGame(tetriminoProvider.get);
+
   const setGame = (g: Game) => (game = g);
   const dispatchEvent = (type: StateEvent["type"]) => (game: Game) =>
     dispatch({ type, game });
@@ -113,7 +118,7 @@ function createState(dispatch: Dispatch<StateEvent>) {
               // TODO: merge these actions and remove the scored status
               return Free.of(game)
                 .map(Actions.score)
-                .map(Actions.cleanupScore(Actions.randomTetrimo))
+                .map(Actions.cleanupScore(tetriminoProvider.get))
                 .run();
             default:
               return game;
@@ -124,7 +129,7 @@ function createState(dispatch: Dispatch<StateEvent>) {
         .getValue(game);
     },
     reset: () => {
-      game = createGame();
+      game = createGame(tetriminoProvider.get);
       dispatch({ type: "reset", game });
     },
   };

@@ -53,39 +53,9 @@ const Flows = {
           }),
         )
         .run(),
-
-  getRandomTetrimono() {
-    const patterns = [
-      TetriminoFactory.I,
-      TetriminoFactory.J,
-      TetriminoFactory.L,
-      TetriminoFactory.O,
-      TetriminoFactory.S,
-      TetriminoFactory.T,
-      TetriminoFactory.Z,
-    ];
-    const randomNum = (max: number) => Math.floor(Math.random() * max);
-
-    let randomPiece = Free.of(patterns.length)
-      .map(randomNum)
-      .map((randomIndex) => patterns[randomIndex]())
-      .run();
-
-    return Free.of(randomNum(4))
-      .map((length) => Array.from({ length }))
-      .map((rotations) =>
-        rotations.reduce(
-          (factory: TetriminoFactory) => factory.clockwise(),
-          TetriminoFactory.from(randomPiece),
-        ),
-      )
-      .map((factory) => factory.create())
-      .run();
-  },
 };
 
 export const Actions = {
-  randomTetrimo: Flows.getRandomTetrimono,
   moveRight: Flows.lateral("right"),
   moveLeft: Flows.lateral("left"),
   rotate: Flows.rotate("clock"),
@@ -173,7 +143,7 @@ export const Actions = {
       Free.of(game)
         .map((g) =>
           PlayFieldFactory.of(g.playfield)
-            .introducePiece(pieceProvider())
+            .introducePiece(game.nextPiece)
             .cleanLines(g.scoringLines)
             .create(),
         )
@@ -184,6 +154,7 @@ export const Actions = {
                 GameFactory.of(game)
                   .withPlayfield(playfield)
                   .withStatus("playing")
+                  .withNextPiece(pieceProvider())
                   .create(),
               failure: () =>
                 GameFactory.of(game)
