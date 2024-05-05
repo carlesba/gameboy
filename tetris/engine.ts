@@ -36,7 +36,9 @@ class Timer {
     const diff = now - this.time;
     const fps = Math.round(1000 / diff);
 
-    if (fps > this.fps) {
+    const maxFPS = this.fps * 1.2;
+
+    if (fps > maxFPS) {
       return Maybe.none();
     }
     this.time = now;
@@ -147,7 +149,6 @@ export function Tetris(onEvent: (event: TetrisEvent) => unknown) {
   });
 
   const framer = Framer.create();
-  // TODO: achieve 60fps
   const timer = new Timer(60);
   const setFrames = (g: Game) => {
     switch (g.status) {
@@ -168,7 +169,7 @@ export function Tetris(onEvent: (event: TetrisEvent) => unknown) {
         .whenSome(setFrames)
         .whenSome(() => onEvent({ type: "fps", fps }));
     });
-    requestAnimationFrame(ticker);
+    setTimeout(ticker);
   };
 
   return {
