@@ -94,7 +94,6 @@ function useGame() {
   const [game, setGame] = useState<Game | null>(null);
   const [fps, setFps] = useState(0);
 
-  // const tetrisAction = useRef<Maybe<TetrisAction>>(Maybe.none());
   const [tetris] = useState(() =>
     TetrisGame((event) => {
       if (event.type === "fps") {
@@ -128,25 +127,30 @@ function useGame() {
     if (b.has(e.key)) {
       action = "rotateB" as const;
     }
-    Maybe.some(tetris.action).whenSome((dispatch) => {
-      if (e.key === "ArrowLeft") {
-        return dispatch("left");
-      }
-      if (e.key === "ArrowRight") {
-        return dispatch("right");
-      }
-      if (e.key === "ArrowDown") {
-        return dispatch("down");
-      }
-      const a = new Set(["i", "a", "d"]);
-      if (a.has(e.key)) {
-        return dispatch("rotateA");
-      }
-      const b = new Set(["o", "s", "f"]);
-      if (b.has(e.key)) {
-        return dispatch("rotateB");
-      }
-    });
+    Maybe.of(game)
+      .flatMap(
+        (g): Maybe<typeof tetris.action> =>
+          g.status !== "gameover" ? Maybe.some(tetris.action) : Maybe.none(),
+      )
+      .whenSome((dispatch) => {
+        if (e.key === "ArrowLeft") {
+          return dispatch("left");
+        }
+        if (e.key === "ArrowRight") {
+          return dispatch("right");
+        }
+        if (e.key === "ArrowDown") {
+          return dispatch("down");
+        }
+        const a = new Set(["i", "a", "d"]);
+        if (a.has(e.key)) {
+          return dispatch("rotateA");
+        }
+        const b = new Set(["o", "s", "f"]);
+        if (b.has(e.key)) {
+          return dispatch("rotateB");
+        }
+      });
   });
 
   return [game, fps] as const;
