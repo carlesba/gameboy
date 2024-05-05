@@ -2,7 +2,7 @@ import { Free } from "./Free";
 import { Maybe } from "./Maybe";
 import { False, True } from "./functional";
 import { Position } from "./position";
-import { Tetrimino, TetriminoFactory, Tetriminos } from "./tetrimino";
+import { Tetrimino, TetriminoFactory } from "./tetrimino";
 
 type Block = string;
 
