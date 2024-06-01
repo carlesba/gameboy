@@ -12,7 +12,9 @@ export class Free<T> {
   map<R>(fn: (value: T) => R): Free<R> {
     return Free.create<R>(() => fn(this.getter()));
   }
-
+  get() {
+    return this.getter();
+  }
   run() {
     return this.getter();
   }

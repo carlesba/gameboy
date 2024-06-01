@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Game, Maybe, Tetris as TetrisGame, Color, Free } from "@/tetris";
+import { styles } from "./styles";
 
-const BLOCK_SIZE = 20;
 function Block(props: {
   row: number;
   col: number;
@@ -11,25 +11,12 @@ function Block(props: {
 }) {
   return (
     <div
-      className={props.blinking ? "blinking" : ""}
-      style={{
-        position: "absolute",
-        transition: "transform 100ms ease-in-out",
-        transform: `translate(${props.col * BLOCK_SIZE}px, ${
-          -props.row * BLOCK_SIZE
-        }px)`,
-        bottom: 0,
-        left: 0,
-        width: `${BLOCK_SIZE}px`,
-        height: `${BLOCK_SIZE}px`,
-        outline: "1px solid gray",
-        background: Free.of(props.color)
-          .map((color) => {
-            if (color === "none") return "transparent";
-            return color;
-          })
-          .run(),
-      }}
+      style={styles.block({
+        row: props.row,
+        col: props.col,
+        color: props.color,
+        blinking: props.blinking,
+      })}
     ></div>
   );
 }
@@ -52,14 +39,7 @@ function Board(props: {
 }) {
   const scoring = new Set(props.scoringLines);
   return (
-    <div
-      style={{
-        position: "relative",
-        width: `${BLOCK_SIZE * props.value.length}px`,
-        height: `${BLOCK_SIZE * props.value[0].length}px`,
-        filter: !props.gameOver ? undefined : "blur(4px)",
-      }}
-    >
+    <div style={styles.board({ blurred: !props.gameOver })}>
       {props.value.map((columns, col) =>
         columns.map((block, row) =>
           block.fold({
@@ -150,12 +130,79 @@ function useGame() {
         if (b.has(e.key)) {
           return dispatch("rotateB");
         }
+        if (e.key === "q") {
+          return dispatch("pause");
+        }
       });
   });
 
   return [game, fps] as const;
 }
+
+function Layout(props: { board: React.ReactNode; controls: React.ReactNode }) {
+  return (
+    <div style={styles.layout()}>
+      <div style={styles.screenFrame()}>
+        <div style={styles.screen()}>{props.board}</div>
+      </div>
+      {props.controls}
+    </div>
+  );
+}
+
+function ActionButton(props: { label: string }) {
+  return <button style={styles.actionButton()}>{props.label}</button>;
+}
+function PadButton(props: { label: "left" | "right" | "down" | "up" }) {
+  return <button style={styles.padButton(props.label)}>{props.label}</button>;
+}
+
+function Controls(props: {
+  up: ReactNode;
+  down: ReactNode;
+  left: ReactNode;
+  right: ReactNode;
+  a: ReactNode;
+  b: ReactNode;
+}) {
+  return (
+    <div style={styles.control()}>
+      <div style={{ gridArea: "p" }}>
+        <div style={styles.pad()}>
+          <div style={{ gridArea: "left" }}>{props.left}</div>
+          <div style={{ gridArea: "right" }}>{props.right}</div>
+          <div style={{ gridArea: "up" }}>{props.up}</div>
+          <div style={{ gridArea: "down" }}>{props.down}</div>
+          <div style={{ gridArea: "center" }}>
+            <div style={styles.padCenter()} />
+          </div>
+        </div>
+      </div>
+
+      <div style={{ gridArea: "a" }}>
+        <ActionButton label="A" />
+      </div>
+      <div style={{ gridArea: "b" }}>
+        <ActionButton label="B" />
+      </div>
+    </div>
+  );
+}
+
 export function GameView() {
+  // return (
+  //   <div>
+  //     <style>{styles.global}</style>
+  //     <Controls
+  //       up={<PadButton label="up" />}
+  //       down={<PadButton label="down" />}
+  //       left={<PadButton label="left" />}
+  //       right={<PadButton label="right" />}
+  //       a={<ActionButton label="A" />}
+  //       b={<ActionButton label="B" />}
+  //     />
+  //   </div>
+  // );
   const [game, fps] = useGame();
 
   if (!game) {
@@ -163,41 +210,43 @@ export function GameView() {
   }
   return (
     <div>
-      <style>
-        {`
-          .blinking {
-            animation: blink 300ms infinite;
-          }
-          @keyframes blink {
-            0% {
-              opacity: 1;
-            }
-            50% {
-              opacity: 0;
-            }
-            100% {
-              opacity: 1;
-            }
-          }
-        `}
-      </style>
-      <div>fps: {fps} FPS</div>
-      <div>level: {game.level}</div>
-      <div>lines: {game.lines}</div>
-      <div>score: {game.score}</div>
-      <div>status: {game.status}</div>
+      <style>{styles.global}</style>
+      {/*
+      <div style={{ display: "none" }}>
+        <div>fps: {fps} FPS</div>
+        <div>level: {game.level}</div>
+        <div>lines: {game.lines}</div>
+        <div>score: {game.score}</div>
+        <div>status: {game.status}</div>
+      </div>
       <hr />
       <div style={{ position: "relative", height: 100, marginBottom: 20 }}>
         next piece: <Piece key={game.nextPiece.id} value={game.nextPiece} />
       </div>
       <hr />
-      <Board
-        gameOver={game.status === "gameover"}
-        value={game.playfield.board}
-        scoringLines={game.scoringLines}
-      >
-        <Piece key={game.playfield.piece.id} value={game.playfield.piece} />
-      </Board>
+
+      */}
+      <Layout
+        controls={
+          <Controls
+            up={<PadButton label="up" />}
+            down={<PadButton label="down" />}
+            left={<PadButton label="left" />}
+            right={<PadButton label="right" />}
+            a={<ActionButton label="A" />}
+            b={<ActionButton label="B" />}
+          />
+        }
+        board={
+          <Board
+            gameOver={game.status === "gameover"}
+            value={game.playfield.board}
+            scoringLines={game.scoringLines}
+          >
+            <Piece key={game.playfield.piece.id} value={game.playfield.piece} />
+          </Board>
+        }
+      />
     </div>
   );
 }

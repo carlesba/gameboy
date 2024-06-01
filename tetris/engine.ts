@@ -176,7 +176,9 @@ export function Tetris(onEvent: (event: TetrisEvent) => unknown) {
     start() {
       ticker();
     },
-    action(action: "left" | "right" | "down" | "rotateA" | "rotateB") {
+    action(
+      action: "left" | "right" | "down" | "rotateA" | "rotateB" | "pause",
+    ) {
       Maybe.of(action)
         .map((action) => {
           switch (action) {
@@ -190,6 +192,8 @@ export function Tetris(onEvent: (event: TetrisEvent) => unknown) {
               return Actions.rotate;
             case "rotateB":
               return Actions.rotateReverse;
+            case "pause":
+              return Actions.pause;
             default:
               return Identity;
           }
