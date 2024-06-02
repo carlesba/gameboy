@@ -42,6 +42,7 @@ body {
 }
 `;
 
+const SCREEN_OUTLINE = "1px solid var(--black)";
 const LIGHT_SHADOW_COLOR = "rgba(248, 238, 247, 0.6)"; // #F8EEF7
 
 const board = (props: { blurred?: boolean }): CSSProperties => ({
@@ -49,6 +50,7 @@ const board = (props: { blurred?: boolean }): CSSProperties => ({
   width: `${BLOCK_SIZE * SIZE.col}px`,
   height: `${BLOCK_SIZE * SIZE.row}px`,
   filter: props.blurred ? undefined : "blur(4px)",
+  outline: SCREEN_OUTLINE,
 });
 
 const layout = (): CSSProperties => ({
@@ -63,7 +65,7 @@ const screenFrame = (): CSSProperties => ({
   margin: "1vmin",
   borderRadius: "25px",
   padding: "20px 20px 50px",
-  width: "300px",
+  width: "330px",
   alignSelf: "center",
 });
 
@@ -88,14 +90,30 @@ const block = (props: {
   left: 0,
   width: `${BLOCK_SIZE - 2}px`,
   height: `${BLOCK_SIZE - 2}px`,
-  border: "1px solid transparent",
+  // border: "1px solid transparent",
   animation: props.blinking ? "blink 300ms infinite" : "none",
+  boxShadow: props.color === "none" ? "" : "1px 1px 2px 0 #5C5758",
   background: Free.of(props.color)
     .map((color) => {
       if (color === "none") return "transparent";
       return `var(--${color})`;
     })
     .run(),
+});
+const gameScreen = (): CSSProperties => ({
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "10px",
+});
+
+const infoBlock = (): CSSProperties => ({
+  display: "flex",
+})
+const nextPiece = (): CSSProperties => ({
+  position: "relative",
+  width: `${BLOCK_SIZE * 5}px`,
+  height: `${BLOCK_SIZE * 5}px`,
+  outline: SCREEN_OUTLINE,
 });
 
 const BUTTON_UNIT = 40;
@@ -212,7 +230,11 @@ const control = (): CSSProperties => ({
 
 export const styles = {
   global,
-  board,
+  game: {
+    screen: gameScreen,
+    board,
+    nextPiece,
+  },
   layout,
   screenFrame,
   screen,

@@ -39,7 +39,7 @@ function Board(props: {
 }) {
   const scoring = new Set(props.scoringLines);
   return (
-    <div style={styles.board({ blurred: !props.gameOver })}>
+    <div style={styles.game.board({ blurred: !props.gameOver })}>
       {props.value.map((columns, col) =>
         columns.map((block, row) =>
           block.fold({
@@ -136,25 +136,38 @@ function useGame() {
       });
   });
 
-  return [game, fps] as const;
+  return [game, tetris.action, fps] as const;
 }
 
-function Layout(props: { board: React.ReactNode; controls: React.ReactNode }) {
+function Screen(props: { children: React.ReactNode }) {
+  return <div style={styles.screen()}>{props.children}</div>;
+}
+
+function Layout(props: { screen: React.ReactNode; controls: React.ReactNode }) {
   return (
     <div style={styles.layout()}>
-      <div style={styles.screenFrame()}>
-        <div style={styles.screen()}>{props.board}</div>
-      </div>
+      <div style={styles.screenFrame()}>{props.screen}</div>
       {props.controls}
     </div>
   );
 }
 
-function ActionButton(props: { label: string }) {
-  return <button style={styles.actionButton()}>{props.label}</button>;
+function ActionButton(props: { label: string; onClick?: () => unknown }) {
+  return (
+    <button style={styles.actionButton()} onClick={props.onClick}>
+      {props.label}
+    </button>
+  );
 }
-function PadButton(props: { label: "left" | "right" | "down" | "up" }) {
-  return <button style={styles.padButton(props.label)}>{props.label}</button>;
+function PadButton(props: {
+  label: "left" | "right" | "down" | "up";
+  onClick?: () => unknown;
+}) {
+  return (
+    <button style={styles.padButton(props.label)} onClick={props.onClick}>
+      {props.label}
+    </button>
+  );
 }
 
 function Controls(props: {
@@ -179,31 +192,41 @@ function Controls(props: {
         </div>
       </div>
 
-      <div style={{ gridArea: "a" }}>
-        <ActionButton label="A" />
-      </div>
-      <div style={{ gridArea: "b" }}>
-        <ActionButton label="B" />
+      <div style={{ gridArea: "a" }}>{props.a}</div>
+      <div style={{ gridArea: "b" }}>{props.b}</div>
+    </div>
+  );
+}
+
+function TetrisGameScreen(props: { game: Game }) {
+  return (
+    <div style={styles.game.screen()}>
+      <Board
+        gameOver={props.game.status === "gameover"}
+        value={props.game.playfield.board}
+        scoringLines={props.game.scoringLines}
+      >
+        <Piece
+          key={props.game.playfield.piece.id}
+          value={props.game.playfield.piece}
+        />
+      </Board>
+      <div>
+        <div style={styles.game.nextPiece()}>
+          <Piece value={props.game.nextPiece} />
+        </div>
+        <div style={styles.game.nextPiece()}>
+          <div>Level {props.game.level}</div>
+          <div>Lines {props.game.lines}</div>
+          <div>Score {props.game.score}</div>
+        </div>
       </div>
     </div>
   );
 }
 
 export function GameView() {
-  // return (
-  //   <div>
-  //     <style>{styles.global}</style>
-  //     <Controls
-  //       up={<PadButton label="up" />}
-  //       down={<PadButton label="down" />}
-  //       left={<PadButton label="left" />}
-  //       right={<PadButton label="right" />}
-  //       a={<ActionButton label="A" />}
-  //       b={<ActionButton label="B" />}
-  //     />
-  //   </div>
-  // );
-  const [game, fps] = useGame();
+  const [game, dispatch, fps] = useGame();
 
   if (!game) {
     return <div>loading...</div>;
@@ -230,21 +253,19 @@ export function GameView() {
         controls={
           <Controls
             up={<PadButton label="up" />}
-            down={<PadButton label="down" />}
-            left={<PadButton label="left" />}
-            right={<PadButton label="right" />}
-            a={<ActionButton label="A" />}
-            b={<ActionButton label="B" />}
+            down={<PadButton label="down" onClick={() => dispatch("down")} />}
+            left={<PadButton label="left" onClick={() => dispatch("left")} />}
+            right={
+              <PadButton label="right" onClick={() => dispatch("right")} />
+            }
+            a={<ActionButton label="A" onClick={() => dispatch("rotateA")} />}
+            b={<ActionButton label="B" onClick={() => dispatch("rotateB")} />}
           />
         }
-        board={
-          <Board
-            gameOver={game.status === "gameover"}
-            value={game.playfield.board}
-            scoringLines={game.scoringLines}
-          >
-            <Piece key={game.playfield.piece.id} value={game.playfield.piece} />
-          </Board>
+        screen={
+          <Screen>
+            <TetrisGameScreen game={game} />
+          </Screen>
         }
       />
     </div>
