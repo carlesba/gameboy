@@ -1,5 +1,5 @@
 "use client";
-import { GameView } from "@/tetris/Tetris";
+import { GameView } from "@/tetris-react";
 import { useEffect, useState } from "react";
 
 export default function Home() {

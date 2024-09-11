@@ -1,8 +1,8 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
-import { Game, Maybe, Tetris as TetrisGame, Color } from "@/tetris";
-import { styles } from "./tetris/styles";
+import { Game as TetrisGame, Maybe, Tetris as createGame, Color } from "@/tetris";
+import { styles } from "../tetris/styles";
 
 function Block(props: {
   row: number;
@@ -22,7 +22,7 @@ function Block(props: {
   );
 }
 
-function Piece(props: { value: Game["nextPiece"] }) {
+function Piece(props: { value: TetrisGame["nextPiece"] }) {
   return (
     <div>
       {Array.from(props.value.positions).map((p, i) => (
@@ -33,7 +33,7 @@ function Piece(props: { value: Game["nextPiece"] }) {
 }
 
 function Board(props: {
-  value: Game["playfield"]["board"];
+  value: TetrisGame["playfield"]["board"];
   scoringLines: number[];
   gameOver?: boolean;
   children?: React.ReactNode;
@@ -72,11 +72,11 @@ function useWindowKeydown(fn: (e: KeyboardEvent) => unknown) {
 }
 
 function useGame() {
-  const [game, setGame] = useState<Game | null>(null);
+  const [game, setGame] = useState<TetrisGame | null>(null);
   const [fps, setFps] = useState(0);
 
   const [tetris] = useState(() =>
-    TetrisGame((event) => {
+    createGame((event) => {
       if (event.type === "fps") {
         setFps(event.fps);
       } else {
@@ -199,7 +199,7 @@ function Controls(props: {
   );
 }
 
-function TetrisGameScreen(props: { game: Game }) {
+function TetrisGameScreen(props: { game: TetrisGame }) {
   return (
     <div style={styles.game.screen()}>
       <Board
