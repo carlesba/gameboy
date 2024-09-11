@@ -1,4 +1,4 @@
-import { CSSProperties, ReactNode } from "react";
+import { CSSProperties, ReactNode, useEffect } from "react";
 
 const global = `
 :root{
@@ -230,12 +230,43 @@ function Screen(props: { children: React.ReactNode }) {
   return <div style={screen()}>{props.children}</div>;
 }
 
+function useWindowKeydown(fn: (e: KeyboardEvent) => unknown) {
+  useEffect(() => {
+    window.addEventListener("keydown", fn);
+    return () => {
+      window.removeEventListener("keydown", fn);
+    };
+  }, [fn]);
+}
+
 type Actions = "rotateA" | "rotateB" | "left" | "right" | "down";
 export function Console(props: {
   children: ReactNode;
   onAction: (action: Actions) => void;
 }) {
-  const dispatch = (action: Actions) => () => props.onAction(action);
+  const dispatch = props.onAction;
+  useWindowKeydown((e) => {
+    if (e.key === "ArrowLeft") {
+      return dispatch("left");
+    }
+    if (e.key === "ArrowRight") {
+      return dispatch("right");
+    }
+    if (e.key === "ArrowDown") {
+      return dispatch("down");
+    }
+    const a = new Set(["i", "a", "d"]);
+    if (a.has(e.key)) {
+      return dispatch("rotateA");
+    }
+    const b = new Set(["o", "s", "f"]);
+    if (b.has(e.key)) {
+      return dispatch("rotateB");
+    }
+    // if (e.key === "q") {
+    //   return dispatch("pause");
+    // }
+  });
   return (
     <div>
       <style>{global}</style>
@@ -243,11 +274,13 @@ export function Console(props: {
         controls={
           <Controls
             up={<PadButton label="up" />}
-            down={<PadButton label="down" onClick={dispatch("down")} />}
-            left={<PadButton label="left" onClick={dispatch("left")} />}
-            right={<PadButton label="right" onClick={dispatch("right")} />}
-            a={<ActionButton label="A" onClick={dispatch("rotateA")} />}
-            b={<ActionButton label="B" onClick={dispatch("rotateB")} />}
+            down={<PadButton label="down" onClick={() => dispatch("down")} />}
+            left={<PadButton label="left" onClick={() => dispatch("left")} />}
+            right={
+              <PadButton label="right" onClick={() => dispatch("right")} />
+            }
+            a={<ActionButton label="A" onClick={() => dispatch("rotateA")} />}
+            b={<ActionButton label="B" onClick={() => dispatch("rotateB")} />}
           />
         }
         screen={<Screen>{props.children}</Screen>}
