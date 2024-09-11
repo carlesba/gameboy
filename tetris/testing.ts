@@ -1,5 +1,4 @@
-import { Free } from "./Free";
-import { Maybe } from "./Maybe";
+import { Free, Maybe } from "@/data-structures";
 import { PlayFieldFactory, Playfield } from "./playfield";
 import { Color, TetriminoFactory } from "./tetrimino";
 

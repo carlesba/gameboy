@@ -1,4 +1,4 @@
-import { Free } from "./Free";
+import { Free } from "@/data-structures/Free";
 import { Game, GameFactory } from "./game";
 import { MoveValidation, Moves } from "./moves";
 import { PlayFieldFactory, Playfield } from "./playfield";

@@ -1,7 +1,5 @@
-import { Free } from "./Free";
-import { Maybe } from "./Maybe";
+import { Free, Maybe, Identity } from "@/data-structures";
 import { Actions } from "./actions";
-import { Identity } from "./functional";
 import { Game } from "./game";
 import { TetriminoProvider } from "./tetriminoProvider";
 import { Tetrimino } from "./tetrimino";

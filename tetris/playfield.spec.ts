@@ -1,6 +1,6 @@
 import { test, expect, describe } from "vitest";
 import { Test } from "./testing";
-import { Free } from "./Free";
+import { Free } from "@/data-structures";
 import { PlayFieldFactory } from "./playfield";
 
 describe("clean lines", () => {

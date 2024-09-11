@@ -1,8 +1,9 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
-import { Game, Maybe, Tetris as TetrisGame, Color } from "@/tetris";
-import { styles } from "./tetris/styles";
+import { Game, Tetris as TetrisGame, Color } from "@/tetris";
+import { styles } from "./styles";
+import { Maybe } from "@/data-structures";
 
 function Block(props: {
   row: number;

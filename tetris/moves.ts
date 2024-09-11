@@ -1,4 +1,4 @@
-import { Free } from "./Free";
+import { Free } from "@/data-structures";
 import { createOperation } from "./operation";
 import { PlayFieldFactory, Playfield } from "./playfield";
 import { Position, Positions } from "./position";

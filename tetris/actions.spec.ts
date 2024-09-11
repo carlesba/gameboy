@@ -1,10 +1,9 @@
 import { test, expect, describe } from "vitest";
 import { GameFactory } from "./game";
-import { Free } from "./Free";
+import { Free, tap } from "@/data-structures";
 import { Test } from "./testing";
 import { Playfield } from "./playfield";
 import { Actions } from "./actions";
-import { tap } from "./functional";
 
 describe("consolidate", () => {
   test("piece goes to the bottom", () => {

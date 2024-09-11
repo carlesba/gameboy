@@ -1,6 +1,4 @@
-import { Free } from "./Free";
-import { Maybe } from "./Maybe";
-import { False, True } from "./functional";
+import { Free, Maybe, False, True } from "@/data-structures";
 import { Position } from "./position";
 import { Color, Tetrimino, TetriminoFactory } from "./tetrimino";
 

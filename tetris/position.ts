@@ -1,4 +1,4 @@
-import { Free } from "./Free";
+import { Free } from "@/data-structures";
 
 type PositionID = `${number},${number}`;
 export type Position = { row: number; col: number };

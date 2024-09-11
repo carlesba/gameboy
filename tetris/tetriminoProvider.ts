@@ -1,4 +1,4 @@
-import { Maybe } from "./Maybe";
+import { Maybe } from "@/data-structures";
 import { Tetrimino, TetriminoFactory } from "./tetrimino";
 
 const randomNum = (max: number) => Math.floor(Math.random() * max);
