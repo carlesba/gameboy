@@ -45,6 +45,16 @@ const styles = {
     width: `${size * BLOCK_SIZE}px`,
     height: `${size * BLOCK_SIZE}px`,
   }),
+  info: (): CSSProperties => ({
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+  }),
+  stats: (): CSSProperties => ({
+    outline: SCREEN_OUTLINE,
+    fontWeight: "bold",
+    padding: "10px",
+  }),
 };
 
 function Piece(props: { value: Game["nextPiece"] }) {
@@ -71,13 +81,13 @@ export function GameScreen(props: { game: Game }) {
             value={props.game.playfield.piece}
           />
         </Board>
-        <div>
+        <div style={styles.info()}>
           <div data-testid="next-piece" style={styles.nextPiece()}>
             <div style={styles.nextPieceWrapper(props.game.nextPiece.size)}>
               <Piece value={props.game.nextPiece} />
             </div>
           </div>
-          <div style={styles.nextPiece()}>
+          <div style={styles.stats()}>
             <div>Level {props.game.level}</div>
             <div>Lines {props.game.lines}</div>
             <div>Score {props.game.score}</div>
