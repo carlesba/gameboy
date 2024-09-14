@@ -1,1 +1,1 @@
-export { GameBoy } from "./GameBoy";
+export { GameBoy } from "./Gameboy";

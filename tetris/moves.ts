@@ -1,5 +1,5 @@
 import { Free } from "@/data-structures";
-import { createOperation } from "./operation";
+import { createOperation } from "./Operation";
 import { PlayFieldFactory, Playfield } from "./playfield";
 import { Position, Positions } from "./position";
 import { Tetrimino, TetriminoFactory } from "./tetrimino";
