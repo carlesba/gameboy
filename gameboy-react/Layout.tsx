@@ -39,8 +39,8 @@ body {
 const layout = (): CSSProperties => ({
   display: "flex",
   flexDirection: "column",
-  paddingTop: "10vmin",
-  gap: "5vh",
+  paddingTop: "30px",
+  height: "100vh",
 });
 const screenFrame = (): CSSProperties => ({
   background: "var(--black)",
@@ -55,7 +55,7 @@ const screen = (): CSSProperties => ({
   background: "var(--screen)",
   padding: "10px",
   height: "400px",
-  width: "310px"
+  width: "310px",
 });
 
 export function Layout(props: {
@@ -63,7 +63,7 @@ export function Layout(props: {
   controls: React.ReactNode;
 }) {
   return (
-    <div>
+    <>
       <style>{global}</style>
       <div style={layout()}>
         <div style={screenFrame()}>
@@ -71,6 +71,6 @@ export function Layout(props: {
         </div>
         {props.controls}
       </div>
-    </div>
+    </>
   );
 }
