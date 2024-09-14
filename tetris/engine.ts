@@ -3,15 +3,12 @@ import { Actions } from "./actions";
 import { Game } from "./game";
 import { TetriminoProvider } from "./tetriminoProvider";
 import { Tetrimino } from "./tetrimino";
+import { Observable } from "@/data-structures/Observable";
 
-type Dispatch<E> = (event: E) => unknown;
-
-type TetrisEvent =
-  | {
-      type: "tick" | "action";
-      game: Game;
-    }
-  | { type: "fps"; fps: number };
+type TetrisEvent = {
+  type: "tick" | "action";
+  game: Game;
+};
 
 const SIZE = { row: 20, col: 10 };
 
@@ -91,17 +88,19 @@ type StateEvent = {
   game: Game;
 };
 
-function createState(dispatch: Dispatch<StateEvent>) {
+function createState() {
   const tetriminoProvider = new TetriminoProvider();
 
+  const stateEvents = Observable.create<StateEvent>();
   let game = createGame(tetriminoProvider.get);
 
   const setGame = (g: Game) => (game = g);
   const dispatchEvent = (type: StateEvent["type"]) => (game: Game) =>
-    dispatch({ type, game });
+    stateEvents.dispatch({ type, game });
 
   return {
     get: () => game,
+    subscribe: stateEvents.subscribe,
     update: (fn: (game: Game) => Game) => {
       return Maybe.some(game)
         .map(fn)
@@ -130,21 +129,24 @@ function createState(dispatch: Dispatch<StateEvent>) {
     },
     reset: () => {
       game = createGame(tetriminoProvider.get);
-      dispatch({ type: "reset", game });
+      stateEvents.dispatch({ type: "reset", game });
     },
   };
 }
 
-export function Tetris(onEvent: (event: TetrisEvent) => unknown) {
-  const state = createState((event) => {
+export function Tetris() {
+  const tetrisEvents = Observable.create<TetrisEvent>();
+  const state = createState();
+  state.subscribe((event) => {
     let type;
     if (event.type === "update") {
       type = "action" as const;
     } else {
       type = "tick" as const;
     }
-    onEvent({ type, game: event.game });
+    tetrisEvents.dispatch({ type, game: event.game });
   });
+  const fpsValues = Observable.create<number>();
 
   const framer = Framer.create();
   const timer = new Timer(60);
@@ -165,12 +167,17 @@ export function Tetris(onEvent: (event: TetrisEvent) => unknown) {
         .next()
         .map(state.nextTick)
         .whenSome(setFrames)
-        .whenSome(() => onEvent({ type: "fps", fps }));
+        .whenSome(() => fpsValues.dispatch(fps));
     });
     setTimeout(ticker);
   };
 
   return {
+    get game() {
+      return state.get();
+    },
+    subscribeState: tetrisEvents.subscribe,
+    subscribeFps: fpsValues.subscribe,
     start() {
       ticker();
     },

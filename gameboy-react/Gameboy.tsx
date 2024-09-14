@@ -1,48 +1,21 @@
-import { ReactNode, useEffect } from "react";
-import { Actions } from "./types";
+import { useState } from "react";
 import { Controls } from "./Controls";
 import { Layout } from "./Layout";
+import { useKeyboardControls } from "./useKeyboardControls";
+import { CartridgeComponent } from "@/cartridge-react";
+import { ControlEventsObservable } from "@/cartridge";
 
-function useWindowKeydown(fn: (e: KeyboardEvent) => unknown) {
-  useEffect(() => {
-    window.addEventListener("keydown", fn);
-    return () => {
-      window.removeEventListener("keydown", fn);
-    };
-  }, [fn]);
-}
+export function GameBoy(props: { Cartridge: CartridgeComponent }) {
+  const [controlEvents] = useState(() => new ControlEventsObservable());
 
-export function GameBoy(props: {
-  children: ReactNode;
-  onAction: (action: Actions) => void;
-}) {
-  const dispatch = props.onAction;
-  useWindowKeydown((e) => {
-    if (e.key === "ArrowLeft") {
-      return dispatch("left");
-    }
-    if (e.key === "ArrowRight") {
-      return dispatch("right");
-    }
-    if (e.key === "ArrowDown") {
-      return dispatch("down");
-    }
-    const a = new Set(["i", "a", "d"]);
-    if (a.has(e.key)) {
-      return dispatch("rotateA");
-    }
-    const b = new Set(["o", "s", "f"]);
-    if (b.has(e.key)) {
-      return dispatch("rotateB");
-    }
-    // if (e.key === "q") {
-    //   return dispatch("pause");
-    // }
-  });
+  useKeyboardControls(controlEvents.dispatch);
+
   return (
     <Layout
-      controls={<Controls onAction={(action) => dispatch(action)} />}
-      screen={props.children}
+      controls={<Controls onAction={controlEvents.dispatch} />}
+      screen={
+        <props.Cartridge controlEvents={controlEvents} onClose={() => {}} />
+      }
     />
   );
 }

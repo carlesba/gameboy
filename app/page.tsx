@@ -1,19 +1,11 @@
 "use client";
-import { GameView } from "@/tetris-react";
-import { useEffect, useState } from "react";
+import { GameBoy } from "@/gameboy-react";
+import { TetrisCartridge } from "@/tetris-react";
 
 export default function Home() {
-  const [started, setStarted] = useState(false);
-  useEffect(() => {
-    setStarted(true);
-  }, []);
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      {!started ? (
-        <button onClick={() => setStarted(true)}>start</button>
-      ) : (
-        <GameView />
-      )}
+      <GameBoy Cartridge={TetrisCartridge} />
     </main>
   );
 }

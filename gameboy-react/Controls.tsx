@@ -1,3 +1,4 @@
+import { ControlEvents } from "@/cartridge";
 import { CSSProperties, ReactNode } from "react";
 
 const LIGHT_SHADOW_COLOR = "rgba(248, 238, 247, 0.6)"; // #F8EEF7
@@ -158,7 +159,9 @@ function ControlLayout(props: {
     </div>
   );
 }
-export function Controls(props: { onAction: (action: Actions) => void }) {
+export function Controls(props: {
+  onAction: (action: ControlEvents) => void;
+}) {
   const dispatch = props.onAction;
   return (
     <ControlLayout
@@ -166,8 +169,8 @@ export function Controls(props: { onAction: (action: Actions) => void }) {
       down={<PadButton label="down" onClick={() => dispatch("down")} />}
       left={<PadButton label="left" onClick={() => dispatch("left")} />}
       right={<PadButton label="right" onClick={() => dispatch("right")} />}
-      a={<ActionButton label="A" onClick={() => dispatch("rotateA")} />}
-      b={<ActionButton label="B" onClick={() => dispatch("rotateB")} />}
+      a={<ActionButton label="A" onClick={() => dispatch("A")} />}
+      b={<ActionButton label="B" onClick={() => dispatch("B")} />}
     />
   );
 }

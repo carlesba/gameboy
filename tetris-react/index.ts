@@ -1,1 +1,1 @@
-export { GameView } from "./Game";
+export { TetrisCartridge } from "./TetrisCartridge";

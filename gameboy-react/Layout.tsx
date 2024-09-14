@@ -54,6 +54,8 @@ const screen = (): CSSProperties => ({
   borderRadius: "10px",
   background: "var(--screen)",
   padding: "10px",
+  height: "400px",
+  width: "310px"
 });
 
 export function Layout(props: {
