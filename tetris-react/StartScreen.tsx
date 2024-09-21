@@ -1,76 +1,57 @@
-import { ControlEventsObservable } from "@/cartridge";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-function Level(props: { value: number; selected?: boolean }) {
-  return (
-    <div
-      style={{
-        border: "1px solid",
-        borderRadius: "4px",
-        padding: "4px 8px",
-        animation: props.selected ? "blink 1s infinite" : "none",
-      }}
-    >
-      Level {props.value}
-    </div>
-  );
-}
-
-const LEVELS = Array.from({ length: 10 }, (_, i) => i);
-
-export function StartScreen(props: {
-  controlEvents: ControlEventsObservable;
-  onStart: (event: { level: number }) => unknown;
-}) {
-  const [level, setLevel] = useState(0);
-
-  useEffect(
-    () =>
-      props.controlEvents.subscribe((key) => {
-        console.log(key);
-        switch (key) {
-          case "down":
-            setLevel((level) => (level + 1) % LEVELS.length);
-            break;
-          case "up":
-            setLevel((level) => (level - 1 + LEVELS.length) % LEVELS.length);
-            break;
-          case "A":
-          case "B":
-          case "start":
-            props.onStart({ level: level });
-            break;
-        }
-      }),
-    [props, level],
-  );
-  return (
-    <div>
-      <style>
-        {`@keyframes blink {
-  0%, 100% {
+const ANIMATIONS = `
+@keyframes appear {
+  from{
     opacity: 0;
   }
-  50% {
+  100% {
     opacity: 1;
   }
-}`}
-      </style>
-      <p style={{ padding: "0 0 8px", margin: 0, fontWeight: "bold" }}>
-        Select a level:
-      </p>
+}
+@keyframes slideDown {
+  from{
+    transform: translateY(-200px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+`;
+
+export function StartScreen(props: { onStart: () => unknown }) {
+  const { onStart } = props;
+  useEffect(() => {
+    let timer = setTimeout(() => onStart(), 6000);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [onStart]);
+
+  return (
+    <>
+      <style>{ANIMATIONS}</style>
       <div
         style={{
+          height: "100%",
           display: "flex",
           flexDirection: "column",
-          gap: "8px",
-          maxHeight: "40px",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
-        {LEVELS.map((value) => (
-          <Level key={value} value={value} selected={value === level} />
-        ))}
+        <h1 style={{ animation: "slideDown 5s linear", margin: 0 }}>Tetris</h1>
+        <p
+          style={{
+            opacity: 0,
+            animation: "appear 300ms forwards",
+            animationDelay: "5s",
+            margin: 0,
+          }}
+        >
+          by @carlesba
+        </p>
       </div>
-    </div>
+    </>
   );
 }

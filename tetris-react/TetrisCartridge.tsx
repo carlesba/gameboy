@@ -4,21 +4,11 @@ import { useState } from "react";
 import { GameScreen } from "./GameScreen";
 import { CartridgeComponent } from "@/cartridge-react";
 import { StartScreen } from "./StartScreen";
+import { LevelScreen } from "./LevelScreen";
 
-type ScreenState = { type: "start" } | { type: "game"; level: number };
-
-// class ScreenState {
-//   value: { type: "start" } | { type: "game"; level: number };
-//   constructor(value: { type: "start" } | { type: "game"; level: number }) {
-//     this.value = value;
-//   }
-//   static start() {
-//     return new ScreenState({ type: "start" });
-//   }
-//   static game(level: number) {
-//     return new ScreenState({ type: "game", level });
-//   }
-// }
+type ScreenState =
+  | { type: "start" | "level selector" }
+  | { type: "game"; level: number };
 
 export const TetrisCartridge: CartridgeComponent = (props) => {
   const [screen, setScreen] = useState<ScreenState>({ type: "start" });
@@ -26,7 +16,11 @@ export const TetrisCartridge: CartridgeComponent = (props) => {
   switch (screen.type) {
     case "start":
       return (
-        <StartScreen
+        <StartScreen onStart={() => setScreen({ type: "level selector" })} />
+      );
+    case "level selector":
+      return (
+        <LevelScreen
           controlEvents={props.controlEvents}
           onStart={(event) => setScreen({ type: "game", level: event.level })}
         />
@@ -37,7 +31,7 @@ export const TetrisCartridge: CartridgeComponent = (props) => {
           controlEvents={props.controlEvents}
           initialLevel={screen.level}
           onGameOver={() => {
-            setScreen({ type: "start" });
+            setScreen({ type: "level selector" });
           }}
         />
       );
