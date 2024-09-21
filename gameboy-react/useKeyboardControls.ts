@@ -23,6 +23,12 @@ export function useKeyboardControls(
     if (e.key === "ArrowDown") {
       return dispatch("down");
     }
+    if (e.key === "ArrowUp") {
+      return dispatch("up");
+    }
+    if (e.key === " " || e.key === "Enter") {
+      return dispatch("start");
+    }
     const a = new Set(["i", "a", "d"]);
     if (a.has(e.key)) {
       return dispatch("A");
