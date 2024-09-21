@@ -20,7 +20,7 @@ const LEVELS = Array.from({ length: 10 }, (_, i) => i);
 
 export function LevelScreen(props: {
   controlEvents: ControlEventsObservable;
-  onStart: (event: { level: number }) => unknown;
+  onSelect: (event: { level: number }) => unknown;
 }) {
   const [level, setLevel] = useState(0);
 
@@ -38,7 +38,7 @@ export function LevelScreen(props: {
           case "A":
           case "B":
           case "start":
-            props.onStart({ level: level });
+            props.onSelect({ level: level });
             break;
         }
       }),
