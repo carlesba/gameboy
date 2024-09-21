@@ -159,13 +159,11 @@ function ControlLayout(props: {
     </div>
   );
 }
-export function Controls(props: {
-  onAction: (action: ControlEvents) => void;
-}) {
+export function Controls(props: { onAction: (action: ControlEvents) => void }) {
   const dispatch = props.onAction;
   return (
     <ControlLayout
-      up={<PadButton label="up" />}
+      up={<PadButton label="up" onClick={() => dispatch("up")} />}
       down={<PadButton label="down" onClick={() => dispatch("down")} />}
       left={<PadButton label="left" onClick={() => dispatch("left")} />}
       right={<PadButton label="right" onClick={() => dispatch("right")} />}
