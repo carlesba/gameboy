@@ -22,9 +22,14 @@ const styles = {
 
 export function GameScreen(props: {
   controlEvents: ControlEventsObservable;
+  initialLevel: number;
   onGameOver: () => unknown;
 }) {
-  const [tetris] = useState(() => TetrisGame());
+  const [tetris] = useState(() =>
+    TetrisGame({
+      initialLevel: props.initialLevel,
+    }),
+  );
   const game = useSyncExternalStore(tetris.subscribeState, () => tetris.game);
   const gameOver = game.status === "gameover";
 
@@ -61,10 +66,7 @@ export function GameScreen(props: {
           value={game.playfield.board}
           scoringLines={game.scoringLines}
         >
-          <Piece
-            key={game.playfield.piece.id}
-            value={game.playfield.piece}
-          />
+          <Piece key={game.playfield.piece.id} value={game.playfield.piece} />
         </Board>
       }
       nextPiece={

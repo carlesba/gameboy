@@ -12,12 +12,14 @@ type TetrisEvent = {
 
 const SIZE = { row: 20, col: 10 };
 
-const createGame = (tetriminoProvider: () => Tetrimino) =>
-  Free.of(Actions.createGame)
-    .map((create) => create(SIZE))
-    .map((create) => create(tetriminoProvider()))
-    .map((create) => create(tetriminoProvider()))
-    .run();
+const createGame =
+  (tetriminoProvider: () => Tetrimino) => (initialLevel?: number) =>
+    Free.of(Actions.createGame)
+      .map((create) => create(initialLevel ?? 0))
+      .map((create) => create(SIZE))
+      .map((create) => create(tetriminoProvider()))
+      .map((create) => create(tetriminoProvider()))
+      .run();
 
 class Timer {
   time: number;
@@ -88,11 +90,11 @@ type StateEvent = {
   game: Game;
 };
 
-function createState() {
+function createState(options: { initialLevel?: number }) {
   const tetriminoProvider = new TetriminoProvider();
 
   const stateEvents = Observable.create<StateEvent>();
-  let game = createGame(tetriminoProvider.get);
+  let game = createGame(tetriminoProvider.get)(options.initialLevel);
 
   const setGame = (g: Game) => (game = g);
   const dispatchEvent = (type: StateEvent["type"]) => (game: Game) =>
@@ -128,15 +130,15 @@ function createState() {
         .getValue(game);
     },
     reset: () => {
-      game = createGame(tetriminoProvider.get);
+      game = createGame(tetriminoProvider.get)(options.initialLevel);
       stateEvents.dispatch({ type: "reset", game });
     },
   };
 }
 
-export function Tetris() {
+export function Tetris(options: { initialLevel?: number }) {
   const tetrisEvents = Observable.create<TetrisEvent>();
-  const state = createState();
+  const state = createState({ initialLevel: options.initialLevel });
   state.subscribe((event) => {
     let type;
     if (event.type === "update") {

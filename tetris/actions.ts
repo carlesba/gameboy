@@ -24,7 +24,9 @@ const Flows = {
   dropPiece: (playfield: Playfield): Playfield =>
     Free.of(playfield.piece)
       .map(Moves.down)
-      .map((piece) => PlayFieldFactory.from(playfield).withPiece(piece).create())
+      .map((piece) =>
+        PlayFieldFactory.from(playfield).withPiece(piece).create(),
+      )
       .map(MoveValidation.validateTickPosition)
       .map((operation) =>
         operation.fold({
@@ -65,15 +67,16 @@ export const Actions = {
       .withStatus(game.status === "pause" ? "playing" : "pause")
       .create(),
   createGame:
+    (initialLevel: number) =>
     (size: { row: number; col: number }) =>
     (piece: Tetrimino) =>
     (nextPiece: Tetrimino) =>
       Free.of(piece)
-        .map((p) =>
-          PlayFieldFactory.of(size, p).introducePiece(piece).create(),
-        )
+        .map((p) => PlayFieldFactory.of(size, p).introducePiece(piece).create())
         .map((playfield) =>
-          GameFactory.empty().withPlayfield(playfield)
+          GameFactory.empty()
+            .withLevel(initialLevel)
+            .withPlayfield(playfield)
             .withNextPiece(nextPiece)
             .create(),
         )
