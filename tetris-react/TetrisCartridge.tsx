@@ -7,16 +7,25 @@ import { StartScreen } from "./StartScreen";
 import { LevelScreen } from "./LevelScreen";
 import { useScoreStore } from "./ScoreStore";
 import { LeaderboardScreen } from "./LeaderboardScreen";
+import { MenuScreen } from "./MenuScreen";
+import { CreditsScreen } from "./CreditsScreen";
+import { HowToPlayScreen } from "./HowToPlayScreen";
 
 type ScreenState =
   | { type: "start" }
+  | { type: "menu" }
   | { type: "level_selector" }
+  | { type: "credits" }
+  | { type: "howto" }
   | { type: "leaderboard"; points: number }
   | { type: "game"; level: number };
 
 const ScreenStateFactory = {
   start: (): ScreenState => ({ type: "start" }),
+  menu: (): ScreenState => ({ type: "menu" }),
   levelSelector: (): ScreenState => ({ type: "level_selector" }),
+  credits: (): ScreenState => ({ type: "credits" }),
+  howToPlay: (): ScreenState => ({ type: "howto" }),
   leaderboard: (points: number): ScreenState => ({
     type: "leaderboard",
     points,
@@ -33,8 +42,28 @@ export const TetrisCartridge: CartridgeComponent = () => {
   switch (screen.type) {
     case "start":
       return (
-        <StartScreen
-          onStart={() => setScreen(ScreenStateFactory.levelSelector())}
+        <StartScreen onStart={() => setScreen(ScreenStateFactory.menu())} />
+      );
+    case "menu":
+      return (
+        <MenuScreen
+          onSelect={(event) => {
+            switch (event.option) {
+              case "quickPlay":
+                setScreen(ScreenStateFactory.game(0));
+                break;
+              case "selectLevel":
+                setScreen(ScreenStateFactory.levelSelector());
+                break;
+              case "credits":
+                setScreen(ScreenStateFactory.credits());
+                break;
+              case "howToPlay":
+                setScreen(ScreenStateFactory.howToPlay());
+                break;
+              // case "settings":
+            }
+          }}
         />
       );
     case "level_selector":
@@ -54,6 +83,15 @@ export const TetrisCartridge: CartridgeComponent = () => {
           onFinish={() => setScreen(ScreenStateFactory.levelSelector())}
         />
       );
+    case "credits":
+      return (
+        <CreditsScreen onDone={() => setScreen(ScreenStateFactory.menu())} />
+      );
+    case "howto":
+      return (
+        <HowToPlayScreen onDone={() => setScreen(ScreenStateFactory.menu())} />
+      );
+
     case "game":
       return (
         <GameScreen
