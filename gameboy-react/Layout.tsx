@@ -1,3 +1,4 @@
+import { Maybe } from "@/data-structures";
 import { CSSProperties, useEffect, useState } from "react";
 
 const global = `
@@ -73,23 +74,34 @@ const gameboy = (): CSSProperties => ({
   color: "rgba(240, 240, 240, 0.3)",
   textShadow: "1px 1px 1px rgba(0, 0, 0, 0.5)",
 });
-const MIN_HEIGHT = 720;
+const MIN_HEIGHT = 760;
+
+const maybeWindow = () => Maybe.of(window);
+
+const maybeViewportHeight = () =>
+  maybeWindow().map(
+    (w) => w.innerHeight || document.documentElement.clientHeight,
+  );
 
 export function Layout(props: {
   screen: React.ReactNode;
   controls: React.ReactNode;
 }) {
   const [scale, setScale] = useState(1);
-  useEffect(() => {
-    const div = document.querySelector("[data-id=gameboy-layout]");
-
-    if (typeof window !== "undefined" && div) {
-      const screenHeight = window.screen.availHeight;
-      const diff = screenHeight - MIN_HEIGHT;
-      if (diff < 0) {
-        setScale(1 + diff / MIN_HEIGHT);
-      }
+  useEffect(function adjustLayoutEffect() {
+    function adjustLayout() {
+      maybeViewportHeight().whenSome((height) => {
+        const diff = height - MIN_HEIGHT;
+        if (diff < 0) {
+          setScale(1 + diff / MIN_HEIGHT);
+        }
+      });
     }
+    adjustLayout();
+    window.addEventListener("resize", adjustLayout);
+    return () => {
+      window.removeEventListener("resize", adjustLayout);
+    };
   }, []);
   return (
     <>
