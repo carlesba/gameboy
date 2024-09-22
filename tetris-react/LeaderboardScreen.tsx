@@ -1,6 +1,6 @@
-import { ControlEventsObservable } from "@/cartridge";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { Score, useScoreStore } from "./ScoreStore";
+import { useControlEvents } from "@/cartridge-react";
 
 function ScoreLine(props: {
   position: number;
@@ -27,7 +27,6 @@ function InsertName() {
 }
 
 export function LeaderboardScreen(props: {
-  controlEvents: ControlEventsObservable;
   points: number;
   // scores: Score[];
   onSubmitScore: (event: Score) => unknown;
@@ -35,26 +34,22 @@ export function LeaderboardScreen(props: {
   const [name, setName] = useState("");
   const scoreStore = useScoreStore();
 
-  useEffect(
-    () =>
-      props.controlEvents.subscribe((key) => {
-        console.log(key);
-        // switch (key) {
-        //   case "down":
-        //     setLevel((level) => (level + 1) % LEVELS.length);
-        //     break;
-        //   case "up":
-        //     setLevel((level) => (level - 1 + LEVELS.length) % LEVELS.length);
-        //     break;
-        //   case "A":
-        //   case "B":
-        //   case "start":
-        //     props.onSelect({ level: level });
-        //     break;
-        // }
-      }),
-    [],
-  );
+  useControlEvents((key) => {
+    console.log(key);
+    // switch (key) {
+    //   case "down":
+    //     setLevel((level) => (level + 1) % LEVELS.length);
+    //     break;
+    //   case "up":
+    //     setLevel((level) => (level - 1 + LEVELS.length) % LEVELS.length);
+    //     break;
+    //   case "A":
+    //   case "B":
+    //   case "start":
+    //     props.onSelect({ level: level });
+    //     break;
+    // }
+  });
   const editPosition = 0;
   const scores: Score[] = [];
   const editing = true;

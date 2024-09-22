@@ -1,13 +1,10 @@
-import {
-  ControlEventsObservable,
-  readStorage,
-  writeStorage,
-} from "@/cartridge";
+import { readStorage, writeStorage } from "@/cartridge";
 
 export type CartridgeComponent = React.ComponentType<{
-  controlEvents: ControlEventsObservable;
   onClose: () => unknown;
 }>;
+
+export * from "./ControlContext";
 
 export function useStorage(key: string) {
   return {

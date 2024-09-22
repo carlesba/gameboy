@@ -1,5 +1,5 @@
-import { ControlEventsObservable } from "@/cartridge";
-import { useEffect, useState } from "react";
+import { useControlEvents } from "@/cartridge-react";
+import { useState } from "react";
 
 function Level(props: { value: number; selected?: boolean }) {
   return (
@@ -19,31 +19,26 @@ function Level(props: { value: number; selected?: boolean }) {
 const LEVELS = Array.from({ length: 10 }, (_, i) => i);
 
 export function LevelScreen(props: {
-  controlEvents: ControlEventsObservable;
   onSelect: (event: { level: number }) => unknown;
 }) {
   const [level, setLevel] = useState(0);
 
-  useEffect(
-    () =>
-      props.controlEvents.subscribe((key) => {
-        console.log(key);
-        switch (key) {
-          case "down":
-            setLevel((level) => (level + 1) % LEVELS.length);
-            break;
-          case "up":
-            setLevel((level) => (level - 1 + LEVELS.length) % LEVELS.length);
-            break;
-          case "A":
-          case "B":
-          case "start":
-            props.onSelect({ level: level });
-            break;
-        }
-      }),
-    [props, level],
-  );
+  useControlEvents((key) => {
+    console.log(key);
+    switch (key) {
+      case "down":
+        setLevel((level) => (level + 1) % LEVELS.length);
+        break;
+      case "up":
+        setLevel((level) => (level - 1 + LEVELS.length) % LEVELS.length);
+        break;
+      case "A":
+      case "B":
+      case "start":
+        props.onSelect({ level: level });
+        break;
+    }
+  });
   return (
     <div>
       <style>

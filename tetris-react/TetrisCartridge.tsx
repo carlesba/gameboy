@@ -5,22 +5,31 @@ import { GameScreen } from "./GameScreen";
 import { CartridgeComponent } from "@/cartridge-react";
 import { StartScreen } from "./StartScreen";
 import { LevelScreen } from "./LevelScreen";
+import { useScoreStore } from "./ScoreStore";
+import { LeaderboardScreen } from "./LeaderboardScreen";
 
 type ScreenState =
   | { type: "start" }
   | { type: "level_selector" }
+  | { type: "leaderboard"; points: number }
   | { type: "game"; level: number };
 
 const ScreenStateFactory = {
   start: (): ScreenState => ({ type: "start" }),
   levelSelector: (): ScreenState => ({ type: "level_selector" }),
+  leaderboard: (points: number): ScreenState => ({
+    type: "leaderboard",
+    points,
+  }),
   game: (level: number): ScreenState => ({ type: "game", level }),
 };
 
 export const TetrisCartridge: CartridgeComponent = (props) => {
   const [screen, setScreen] = useState<ScreenState>(() =>
     ScreenStateFactory.start(),
+    // ScreenStateFactory.leaderboard(100),
   );
+  const scoreStore = useScoreStore();
 
   switch (screen.type) {
     case "start":
@@ -32,16 +41,24 @@ export const TetrisCartridge: CartridgeComponent = (props) => {
     case "level_selector":
       return (
         <LevelScreen
-          controlEvents={props.controlEvents}
           onSelect={(event) => setScreen(ScreenStateFactory.game(event.level))}
+        />
+      );
+    case "leaderboard":
+      return (
+        <LeaderboardScreen
+          points={screen.points}
+          onSubmitScore={(event) => {}}
         />
       );
     case "game":
       return (
         <GameScreen
-          controlEvents={props.controlEvents}
           initialLevel={screen.level}
           onGameOver={(event) => {
+            if (scoreStore.qualifyingScore(event.score)) {
+              setScreen(ScreenStateFactory.leaderboard(event.score));
+            }
             setScreen(ScreenStateFactory.levelSelector());
           }}
         />

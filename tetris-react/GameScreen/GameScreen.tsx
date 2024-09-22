@@ -1,4 +1,3 @@
-import { Game } from "@/tetris";
 import { Board } from "./Board";
 import {
   CSSProperties,
@@ -10,7 +9,7 @@ import { Tetris as TetrisGame } from "@/tetris";
 import { BLOCK_SIZE } from "./Block";
 import { Layout } from "./Layout";
 import { Piece } from "./Piece";
-import { ControlEventsObservable } from "@/cartridge";
+import { useControlEvents } from "@/cartridge-react";
 
 const styles = {
   nextPieceWrapper: (size: number): CSSProperties => ({
@@ -34,7 +33,6 @@ const StatLine = (props: { label: string; value: number }) => (
 );
 
 export function GameScreen(props: {
-  controlEvents: ControlEventsObservable;
   initialLevel: number;
   onGameOver: (event: { score: number }) => unknown;
 }) {
@@ -47,26 +45,22 @@ export function GameScreen(props: {
   const gameOver = game.status === "gameover";
   const score = game.score;
 
-  useEffect(
-    () =>
-      props.controlEvents.subscribe((event) => {
-        if (gameOver) {
-          return props.onGameOver({ score });
-        }
-        switch (event) {
-          case "A":
-            return tetris.action("rotateA");
-          case "B":
-            return tetris.action("rotateB");
-          case "start":
-          case "up":
-            return;
-          default:
-            return tetris.action(event);
-        }
-      }),
-    [props, gameOver, tetris, score],
-  );
+  useControlEvents((event) => {
+    if (gameOver) {
+      return props.onGameOver({ score });
+    }
+    switch (event) {
+      case "A":
+        return tetris.action("rotateA");
+      case "B":
+        return tetris.action("rotateB");
+      case "start":
+      case "up":
+        return;
+      default:
+        return tetris.action(event);
+    }
+  });
 
   useEffect(() => {
     tetris.start();
