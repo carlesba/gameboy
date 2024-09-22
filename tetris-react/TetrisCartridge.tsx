@@ -24,10 +24,9 @@ const ScreenStateFactory = {
   game: (level: number): ScreenState => ({ type: "game", level }),
 };
 
-export const TetrisCartridge: CartridgeComponent = (props) => {
+export const TetrisCartridge: CartridgeComponent = () => {
   const [screen, setScreen] = useState<ScreenState>(() =>
     ScreenStateFactory.start(),
-    // ScreenStateFactory.leaderboard(100),
   );
   const scoreStore = useScoreStore();
 
@@ -48,7 +47,11 @@ export const TetrisCartridge: CartridgeComponent = (props) => {
       return (
         <LeaderboardScreen
           points={screen.points}
-          onSubmitScore={(event) => {}}
+          scores={scoreStore.rankings()}
+          onSubmitScore={(event) => {
+            scoreStore.submit(event.name, event.points);
+          }}
+          onFinish={() => setScreen(ScreenStateFactory.levelSelector())}
         />
       );
     case "game":
