@@ -1,4 +1,4 @@
-import { CSSProperties } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 
 const global = `
 :root{
@@ -36,11 +36,14 @@ body {
   }
 }
 `;
-const layout = (): CSSProperties => ({
+const layout = (scale: number): CSSProperties => ({
   display: "flex",
   flexDirection: "column",
   paddingTop: "30px",
   height: "100vh",
+  transform: `scale(${scale})`,
+  transformOrigin: "top center",
+  transition: "transform 0.4s",
 });
 const screenFrame = (): CSSProperties => ({
   background: "var(--black)",
@@ -70,15 +73,28 @@ const gameboy = (): CSSProperties => ({
   color: "rgba(240, 240, 240, 0.3)",
   textShadow: "1px 1px 1px rgba(0, 0, 0, 0.5)",
 });
+const MIN_HEIGHT = 720;
 
 export function Layout(props: {
   screen: React.ReactNode;
   controls: React.ReactNode;
 }) {
+  const [scale, setScale] = useState(1);
+  useEffect(() => {
+    const div = document.querySelector("[data-id=gameboy-layout]");
+
+    if (typeof window !== "undefined" && div) {
+      const screenHeight = window.screen.availHeight;
+      const diff = screenHeight - MIN_HEIGHT;
+      if (diff < 0) {
+        setScale(1 + diff / MIN_HEIGHT);
+      }
+    }
+  }, []);
   return (
     <>
       <style>{global}</style>
-      <div style={layout()}>
+      <div data-id="gameboy-layout" style={layout(scale)}>
         <div style={screenFrame()}>
           <div style={screen()}>{props.screen}</div>
           <div style={gameboy()}>WebGameBoy</div>
