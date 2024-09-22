@@ -49,6 +49,8 @@ const screenFrame = (): CSSProperties => ({
   padding: "20px 20px 50px",
   width: "330px",
   alignSelf: "center",
+  position: "relative",
+  boxShadow: "inset rgba(255, 255, 255, 0.9) -1px -1px 0px",
 });
 const screen = (): CSSProperties => ({
   borderRadius: "10px",
@@ -56,6 +58,17 @@ const screen = (): CSSProperties => ({
   padding: "10px",
   height: "400px",
   width: "310px",
+  boxShadow: "inset rgba(0, 0, 0, 0.9) -1px -1px 3px",
+});
+const gameboy = (): CSSProperties => ({
+  position: "absolute",
+  bottom: "15px",
+  left: "20px",
+  fontSize: "20px",
+  fontWeight: "bold",
+  fontStyle: "italic",
+  color: "rgba(240, 240, 240, 0.3)",
+  textShadow: "1px 1px 1px rgba(0, 0, 0, 0.5)",
 });
 
 export function Layout(props: {
@@ -68,6 +81,7 @@ export function Layout(props: {
       <div style={layout()}>
         <div style={screenFrame()}>
           <div style={screen()}>{props.screen}</div>
+          <div style={gameboy()}>WebGameBoy</div>
         </div>
         {props.controls}
       </div>
