@@ -31,13 +31,14 @@ const styles = {
     gridTemplateColumns: "1fr 1fr",
     gap: "10px",
   }),
+  box: (): CSSProperties => ({
+    outline: SCREEN_OUTLINE,
+  }),
   nextPiece: (): CSSProperties => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    width: `${BLOCK_SIZE * 5}px`,
-    height: `${BLOCK_SIZE * 5}px`,
-    outline: SCREEN_OUTLINE,
+    minHeight: `${BLOCK_SIZE * 4}px`,
   }),
   info: (): CSSProperties => ({
     display: "flex",
@@ -62,10 +63,15 @@ export function Layout(props: {
       <div style={styles.screen()}>
         {props.board}
         <div style={styles.info()}>
-          <div data-testid="next-piece" style={styles.nextPiece()}>
-            {props.nextPiece}
+          <div style={styles.box()}>
+            <h5 style={{ padding: "8px 8px 0" }}>Next</h5>
+            <div data-testid="next-piece" style={styles.nextPiece()}>
+              {props.nextPiece}
+            </div>
           </div>
-          <div style={styles.stats()}>{props.stats}</div>
+          <div style={styles.box()}>
+            <div style={styles.stats()}>{props.stats}</div>
+          </div>
         </div>
       </div>
     </>

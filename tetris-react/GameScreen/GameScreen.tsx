@@ -20,10 +20,23 @@ const styles = {
   }),
 };
 
+const StatLine = (props: { label: string; value: number }) => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    }}
+  >
+    <span>{props.label}</span>
+    <span>{props.value}</span>
+  </div>
+);
+
 export function GameScreen(props: {
   controlEvents: ControlEventsObservable;
   initialLevel: number;
-  onGameOver: () => unknown;
+  onGameOver: (event: { score: number }) => unknown;
 }) {
   const [tetris] = useState(() =>
     TetrisGame({
@@ -32,12 +45,13 @@ export function GameScreen(props: {
   );
   const game = useSyncExternalStore(tetris.subscribeState, () => tetris.game);
   const gameOver = game.status === "gameover";
+  const score = game.score;
 
   useEffect(
     () =>
       props.controlEvents.subscribe((event) => {
         if (gameOver) {
-          return props.onGameOver();
+          return props.onGameOver({ score });
         }
         switch (event) {
           case "A":
@@ -51,7 +65,7 @@ export function GameScreen(props: {
             return tetris.action(event);
         }
       }),
-    [props, gameOver, tetris],
+    [props, gameOver, tetris, score],
   );
 
   useEffect(() => {
@@ -76,9 +90,9 @@ export function GameScreen(props: {
       }
       stats={
         <div>
-          <div>Level {game.level}</div>
-          <div>Lines {game.lines}</div>
-          <div>Score {game.score}</div>
+          <StatLine label="Level " value={game.level} />
+          <StatLine label="Lines " value={game.lines} />
+          <StatLine label="Score " value={game.score} />
         </div>
       }
     />

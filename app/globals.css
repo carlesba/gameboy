@@ -9,16 +9,45 @@
 }
 
 body {
-  /* color: rgb(var(--foreground-rgb)); */
-  /* background: linear-gradient( */
-  /*     to top, */
-  /*     transparent, */
-  /*     rgb(var(--background-end-rgb)) */
-  /*   ) */
-  /*   rgb(var(--background-start-rgb)); */
   width: 100vw;
   min-height: 100vh;
 }
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+span {
+  color: rgba(20, 20, 20, 0.8);
+  text-shadow: 2px 2px 1px rgba(20, 20, 20, 0.2);
+}
+h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+h4 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+h5 {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
 /**/
 /* @layer utilities { */
 /*   .text-balance { */

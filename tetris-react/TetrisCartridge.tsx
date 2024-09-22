@@ -41,7 +41,7 @@ export const TetrisCartridge: CartridgeComponent = (props) => {
         <GameScreen
           controlEvents={props.controlEvents}
           initialLevel={screen.level}
-          onGameOver={() => {
+          onGameOver={(event) => {
             setScreen(ScreenStateFactory.levelSelector());
           }}
         />
