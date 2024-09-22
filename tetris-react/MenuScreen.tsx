@@ -42,7 +42,6 @@ export function MenuScreen(props: {
   const option = OPTIONS[index] ?? "quickPlay";
 
   useControlEvents((key) => {
-    console.log(key);
     switch (key) {
       case "down":
         setIndex((i) => (i + 1) % OPTIONS.length);
