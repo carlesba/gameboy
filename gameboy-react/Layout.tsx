@@ -45,6 +45,7 @@ const layout = (scale: number): CSSProperties => ({
   transform: `scale(${scale})`,
   transformOrigin: "top center",
   transition: "transform 0.4s",
+  gap: "40px",
 });
 const screenFrame = (): CSSProperties => ({
   background: "var(--black)",
@@ -74,7 +75,8 @@ const gameboy = (): CSSProperties => ({
   color: "rgba(240, 240, 240, 0.3)",
   textShadow: "1px 1px 1px rgba(0, 0, 0, 0.5)",
 });
-const MIN_HEIGHT = 760;
+
+const MIN_HEIGHT = 900;
 
 const maybeWindow = () => Maybe.of(window);
 
