@@ -45,7 +45,11 @@ export function useScoreStore() {
       if (score <= 0) {
         return false;
       }
-      const index = read().findIndex((s) => s.points < score);
+      const list = read();
+      if (list.length < 10) {
+        return true;
+      }
+      const index = list.findIndex((s) => s.points < score);
       return index === -1 || index < 10;
     },
     rankings() {

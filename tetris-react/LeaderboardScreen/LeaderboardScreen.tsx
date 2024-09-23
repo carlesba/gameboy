@@ -7,7 +7,7 @@ function ScoreLine(props: {
   position: number;
   name: React.ReactNode;
   points: number;
-  highlighted: boolean;
+  highlighted?: boolean;
 }) {
   return (
     <div
@@ -88,7 +88,6 @@ export function LeaderboardScreen(props: {
                 position={index + 1}
                 name={<ViewName>{entry.score.name}</ViewName>}
                 points={entry.score.points}
-                highlighted={props.points === entry.score.points}
               />
             );
           case "edit":

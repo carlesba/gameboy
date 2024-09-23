@@ -80,7 +80,7 @@ export const TetrisCartridge: CartridgeComponent = () => {
           onSubmitScore={(event) => {
             scoreStore.submit(event.name, event.points);
           }}
-          onFinish={() => setScreen(ScreenStateFactory.levelSelector())}
+          onFinish={() => setScreen(ScreenStateFactory.menu())}
         />
       );
     case "credits":
@@ -99,8 +99,9 @@ export const TetrisCartridge: CartridgeComponent = () => {
           onGameOver={(event) => {
             if (scoreStore.qualifyingScore(event.score)) {
               setScreen(ScreenStateFactory.leaderboard(event.score));
+            } else {
+              setScreen(ScreenStateFactory.menu());
             }
-            setScreen(ScreenStateFactory.menu());
           }}
         />
       );
