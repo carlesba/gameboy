@@ -25,6 +25,48 @@ function ActionButton(props: { label: string; onClick?: () => unknown }) {
     </button>
   );
 }
+
+const startButton = (): CSSProperties => ({
+  cursor: "pointer",
+  border: "1px solid #353636",
+  width: "80px",
+  height: "15px",
+  borderRadius: "10px",
+  background: "#4B4B4B",
+  color: "transparent",
+  fontWeight: "bold",
+  fontSize: "1.2rem",
+  boxShadow: `-1px 1px 1px 0 #5C5758, inset -2px 3px 1px 0 var(--button-light-shadow)`,
+});
+
+const startButtonTilt = (): CSSProperties => ({
+  position: "relative",
+  transform: "rotate(-15deg)",
+});
+
+const startButtonLabel = (): CSSProperties => ({
+  position: "absolute",
+  top: "20px",
+  right: "5px",
+  textAlign: "center",
+  left: "5px",
+  fontWeight: "bold",
+  letterSpacing: "6px",
+  display: "block",
+  fontSize: "0.9rem",
+  opacity: 0.9,
+  color: "#4B4B4B",
+});
+function StartButton(props: { label: string; onClick?: () => unknown }) {
+  return (
+    <div style={startButtonTilt()}>
+      <button style={startButton()} onClick={props.onClick}>
+        {props.label}
+      </button>
+      <span style={startButtonLabel()}>{props.label}</span>
+    </div>
+  );
+}
 type Side = "up" | "left" | "right" | "down";
 type SideReader<T> = Record<Side, T>;
 const readSide = <T,>(side: Side, reader: SideReader<T>): T => reader[side];
@@ -103,7 +145,7 @@ const control = (): CSSProperties => ({
   "p p p p . . b . a ."
   "p p p p . . b . . ."
   "p p p p . . . . . ."
-  ". . . . . . . . . ."`,
+  ". . . . . s . . . ."`,
   justifyContent: "center",
   alignItems: "center",
 });
@@ -139,6 +181,7 @@ function ControlLayout(props: {
   right: ReactNode;
   a: ReactNode;
   b: ReactNode;
+  start: ReactNode;
 }) {
   return (
     <div style={control()}>
@@ -156,6 +199,7 @@ function ControlLayout(props: {
 
       <div style={{ gridArea: "a" }}>{props.a}</div>
       <div style={{ gridArea: "b" }}>{props.b}</div>
+      <div style={{ gridArea: "s" }}>{props.start}</div>
     </div>
   );
 }
@@ -169,6 +213,7 @@ export function Controls(props: { onAction: (action: ControlEvents) => void }) {
       right={<PadButton label="right" onClick={() => dispatch("right")} />}
       a={<ActionButton label="A" onClick={() => dispatch("A")} />}
       b={<ActionButton label="B" onClick={() => dispatch("B")} />}
+      start={<StartButton label="start" onClick={() => dispatch("start")} />}
     />
   );
 }
