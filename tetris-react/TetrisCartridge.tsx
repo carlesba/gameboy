@@ -100,7 +100,7 @@ export const TetrisCartridge: CartridgeComponent = () => {
             if (scoreStore.qualifyingScore(event.score)) {
               setScreen(ScreenStateFactory.leaderboard(event.score));
             }
-            setScreen(ScreenStateFactory.levelSelector());
+            setScreen(ScreenStateFactory.menu());
           }}
         />
       );
