@@ -1,7 +1,7 @@
 import { useControlEvents } from "@/cartridge-react";
 import { useState } from "react";
 
-function Level(props: { value: number; selected?: boolean }) {
+function Level(props: { label: string; selected?: boolean }) {
   return (
     <div
       style={{
@@ -11,7 +11,7 @@ function Level(props: { value: number; selected?: boolean }) {
         animation: props.selected ? "blink 1s infinite" : "none",
       }}
     >
-      Level {props.value}
+      {props.label}
     </div>
   );
 }
@@ -20,21 +20,26 @@ const LEVELS = Array.from({ length: 10 }, (_, i) => i);
 
 export function LevelScreen(props: {
   onSelect: (event: { level: number }) => unknown;
+  onBack: () => unknown;
 }) {
   const [level, setLevel] = useState(0);
 
   useControlEvents((key) => {
-    console.log(key);
+    const totalOptions = LEVELS.length + 1;
     switch (key) {
       case "down":
-        setLevel((level) => (level + 1) % LEVELS.length);
+        setLevel((level) => (level + 1) % totalOptions);
         break;
       case "up":
-        setLevel((level) => (level - 1 + LEVELS.length) % LEVELS.length);
+        setLevel((level) => (level - 1 + totalOptions) % totalOptions);
         break;
       case "A":
       case "B":
       case "start":
+        if (level === LEVELS.length) {
+          props.onBack();
+          break;
+        }
         props.onSelect({ level: level });
         break;
     }
@@ -63,8 +68,13 @@ export function LevelScreen(props: {
         }}
       >
         {LEVELS.map((value) => (
-          <Level key={value} value={value} selected={value === level} />
+          <Level
+            key={value}
+            label={`Level ${value}`}
+            selected={value === level}
+          />
         ))}
+        <Level label="Back" selected={level === LEVELS.length} />
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useState } from "react";
 const OPTIONS = [
   "quickPlay",
   "selectLevel",
+  "leaderboard",
   "howToPlay",
   // "settings",
   "credits",
@@ -16,6 +17,7 @@ const Labels = new Map<Option, string>([
   ["credits", "Credits"],
   ["howToPlay", "How to Play"],
   ["quickPlay", "Quick Game"],
+  ["leaderboard", "Leader Board"],
   // ["settings", "Settings"],
 ]);
 const labelFromOption = (option: Option) => Labels.get(option) ?? option;

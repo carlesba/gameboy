@@ -61,7 +61,9 @@ export const TetrisCartridge: CartridgeComponent = () => {
               case "howToPlay":
                 setScreen(ScreenStateFactory.howToPlay());
                 break;
-              // case "settings":
+              case "leaderboard":
+                setScreen(ScreenStateFactory.leaderboard(0));
+                break;
             }
           }}
         />
@@ -70,6 +72,7 @@ export const TetrisCartridge: CartridgeComponent = () => {
       return (
         <LevelScreen
           onSelect={(event) => setScreen(ScreenStateFactory.game(event.level))}
+          onBack={() => setScreen(ScreenStateFactory.menu())}
         />
       );
     case "leaderboard":
