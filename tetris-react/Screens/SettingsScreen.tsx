@@ -1,7 +1,9 @@
 import { useControlEvents } from "@/cartridge-react";
 import { useState } from "react";
+import { useSounds } from "../Sounds";
+import { useGetSettings, useSetSettings } from "../Settings";
 
-function Level(props: { label: string; selected?: boolean }) {
+function SettingView(props: { label: string; selected?: boolean }) {
   return (
     <div
       style={{
@@ -16,31 +18,46 @@ function Level(props: { label: string; selected?: boolean }) {
   );
 }
 
-const LEVELS = Array.from({ length: 10 }, (_, i) => i);
+type SettingsKey = "sound" | "back";
 
-export function LevelScreen(props: {
-  onSelect: (event: { level: number }) => unknown;
-  onBack: () => unknown;
-}) {
-  const [level, setLevel] = useState(0);
+const SettingsList: SettingsKey[] = ["sound", "back"];
 
+export function SettingsScreen(props: { onBack: () => unknown }) {
+  const [cursor, setCursor] = useState(0);
+
+  const settings = useGetSettings();
+  const setSetting = useSetSettings();
+
+  const soundLabel = settings.sound ? "Sound: On" : "Sound: Off";
+
+  const sounds = useSounds();
   useControlEvents((key) => {
-    const totalOptions = LEVELS.length + 1;
+    const totalOptions = SettingsList.length + 1;
     switch (key) {
       case "down":
-        setLevel((level) => (level + 1) % totalOptions);
+        sounds.cursorSound();
+        setCursor((level) => (level + 1) % totalOptions);
         break;
       case "up":
-        setLevel((level) => (level - 1 + totalOptions) % totalOptions);
+        sounds.cursorSound();
+        setCursor((level) => (level - 1 + totalOptions) % totalOptions);
         break;
       case "A":
       case "B":
       case "start":
-        if (level === LEVELS.length) {
+        if (cursor === SettingsList.length) {
+          sounds.selectSound();
           props.onBack();
           break;
         }
-        props.onSelect({ level: level });
+        const setting = SettingsList[cursor];
+        if (setting === "sound") {
+          const sound = !settings.sound;
+          setSetting({ ...settings, sound });
+        } else {
+          props.onBack();
+        }
+        sounds.selectSound();
         break;
     }
   });
@@ -56,9 +73,9 @@ export function LevelScreen(props: {
   }
 }`}
       </style>
-      <p style={{ padding: "0 0 8px", margin: 0, fontWeight: "bold" }}>
-        Select a level:
-      </p>
+      <h3 style={{ padding: "0 0 8px", margin: 0, fontWeight: "bold" }}>
+        Settings
+      </h3>
       <div
         style={{
           display: "flex",
@@ -67,14 +84,8 @@ export function LevelScreen(props: {
           maxHeight: "40px",
         }}
       >
-        {LEVELS.map((value) => (
-          <Level
-            key={value}
-            label={`Level ${value}`}
-            selected={value === level}
-          />
-        ))}
-        <Level label="Back" selected={level === LEVELS.length} />
+        <SettingView label={soundLabel} selected={cursor === 0} />
+        <SettingView label="Back" selected={cursor === 1} />
       </div>
     </div>
   );

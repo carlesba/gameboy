@@ -4,8 +4,8 @@ import { useStorage } from "@/cartridge-react";
 import { createContext, useCallback, useContext, useState } from "react";
 
 type Settings = {
-  sound: true;
-  music: true;
+  sound: boolean;
+  music: boolean;
 };
 
 const SettingsContext = createContext<Settings>({

@@ -7,8 +7,8 @@ const OPTIONS = [
   "selectLevel",
   "leaderboard",
   "howToPlay",
-  "settings",
   "credits",
+  "settings",
 ] as const;
 
 type Option = (typeof OPTIONS)[number];

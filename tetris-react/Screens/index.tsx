@@ -10,6 +10,7 @@ import { LeaderboardScreen } from "./LeaderboardScreen";
 import { MenuScreen } from "./MenuScreen";
 import { CreditsScreen } from "./CreditsScreen";
 import { HowToPlayScreen } from "./HowToPlayScreen";
+import { SettingsScreen } from "./SettingsScreen";
 
 type ScreenState =
   | { type: "start" }
@@ -17,6 +18,7 @@ type ScreenState =
   | { type: "level_selector" }
   | { type: "credits" }
   | { type: "howto" }
+  | { type: "settings" }
   | { type: "leaderboard"; points: number }
   | { type: "game"; level: number };
 
@@ -26,6 +28,7 @@ const ScreenStateFactory = {
   levelSelector: (): ScreenState => ({ type: "level_selector" }),
   credits: (): ScreenState => ({ type: "credits" }),
   howToPlay: (): ScreenState => ({ type: "howto" }),
+  settings: (): ScreenState => ({ type: "settings" }),
   leaderboard: (points: number): ScreenState => ({
     type: "leaderboard",
     points,
@@ -64,6 +67,9 @@ export const TetrisScreens: CartridgeComponent = () => {
               case "leaderboard":
                 setScreen(ScreenStateFactory.leaderboard(0));
                 break;
+              case "settings":
+                setScreen(ScreenStateFactory.settings());
+                break;
             }
           }}
         />
@@ -93,6 +99,10 @@ export const TetrisScreens: CartridgeComponent = () => {
     case "howto":
       return (
         <HowToPlayScreen onDone={() => setScreen(ScreenStateFactory.menu())} />
+      );
+    case "settings":
+      return (
+        <SettingsScreen onBack={() => setScreen(ScreenStateFactory.menu())} />
       );
 
     case "game":
