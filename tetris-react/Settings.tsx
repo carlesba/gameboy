@@ -9,8 +9,8 @@ type Settings = {
 };
 
 const SettingsContext = createContext<Settings>({
-  sound: true,
-  music: true,
+  sound: false,
+  music: false,
 });
 
 const SettingsDispatchContext = createContext<React.Dispatch<Settings>>(

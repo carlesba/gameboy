@@ -50,7 +50,17 @@ export function GameScreen(props: {
     () =>
       tetris.subscribeState((event) => {
         if (event.type === "tick") {
-          sounds.moveSound();
+          switch (event.game.status) {
+            case "gameover":
+              sounds.gameOverSound();
+              break;
+            case "scoring":
+              sounds.landSound();
+              break;
+            case "playing":
+              sounds.moveSound();
+              break;
+          }
         }
       }),
     [tetris, sounds],
