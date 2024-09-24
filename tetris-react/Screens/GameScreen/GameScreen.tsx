@@ -10,6 +10,7 @@ import { BLOCK_SIZE } from "./Block";
 import { Layout } from "./Layout";
 import { Piece } from "./Piece";
 import { useControlEvents } from "@/cartridge-react";
+import { useSounds } from "@/tetris-react/Sounds";
 
 const styles = {
   nextPieceWrapper: (size: number): CSSProperties => ({
@@ -44,6 +45,16 @@ export function GameScreen(props: {
   const game = useSyncExternalStore(tetris.subscribeState, () => tetris.game);
   const gameOver = game.status === "gameover";
   const score = game.score;
+  const sounds = useSounds();
+  useEffect(
+    () =>
+      tetris.subscribeState((event) => {
+        if (event.type === "tick") {
+          sounds.moveSound();
+        }
+      }),
+    [tetris, sounds],
+  );
 
   useControlEvents((event) => {
     if (gameOver) {
@@ -51,8 +62,10 @@ export function GameScreen(props: {
     }
     switch (event) {
       case "A":
+        sounds.rotateSound();
         return tetris.action("rotateA");
       case "B":
+        sounds.rotateSound();
         return tetris.action("rotateB");
       case "start":
       case "up":

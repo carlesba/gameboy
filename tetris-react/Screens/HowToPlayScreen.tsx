@@ -1,4 +1,5 @@
 import { useControlEvents } from "@/cartridge-react";
+import { useSounds } from "../Sounds";
 
 const Section = (props: { children: React.ReactNode }) => (
   <div
@@ -12,11 +13,13 @@ const Section = (props: { children: React.ReactNode }) => (
   </div>
 );
 export function HowToPlayScreen(props: { onDone: () => unknown }) {
+  const sounds = useSounds();
   useControlEvents((key) => {
     switch (key) {
       case "A":
       case "B":
       case "start":
+        sounds.selectSound();
         props.onDone();
         break;
     }

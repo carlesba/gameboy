@@ -1,12 +1,13 @@
 import { useControlEvents } from "@/cartridge-react";
 import { useState } from "react";
+import { useSounds } from "../Sounds";
 
 const OPTIONS = [
   "quickPlay",
   "selectLevel",
   "leaderboard",
   "howToPlay",
-  // "settings",
+  "settings",
   "credits",
 ] as const;
 
@@ -18,7 +19,7 @@ const Labels = new Map<Option, string>([
   ["howToPlay", "How to Play"],
   ["quickPlay", "Quick Game"],
   ["leaderboard", "Leader Board"],
-  // ["settings", "Settings"],
+  ["settings", "Settings"],
 ]);
 const labelFromOption = (option: Option) => Labels.get(option) ?? option;
 
@@ -43,17 +44,21 @@ export function MenuScreen(props: {
   const [index, setIndex] = useState(0);
   const option = OPTIONS[index] ?? "quickPlay";
 
+  const sounds = useSounds();
   useControlEvents((key) => {
     switch (key) {
       case "down":
+        sounds.cursorSound();
         setIndex((i) => (i + 1) % OPTIONS.length);
         break;
       case "up":
+        sounds.cursorSound();
         setIndex((i) => (i - 1 + OPTIONS.length) % OPTIONS.length);
         break;
       case "A":
       case "B":
       case "start":
+        sounds.selectSound();
         props.onSelect({ option });
         break;
     }

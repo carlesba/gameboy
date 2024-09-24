@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { Score } from "../ScoreStore";
 import { useControlEvents } from "@/cartridge-react";
 import { InputName, ViewName } from "./Name";
+import { Score } from "@/tetris-react/Scores";
 
 function ScoreLine(props: {
   position: number;

@@ -1,11 +1,14 @@
 import { useControlEvents } from "@/cartridge-react";
+import { useSounds } from "../Sounds";
 
 export function CreditsScreen(props: { onDone: () => unknown }) {
+  const sounds = useSounds();
   useControlEvents((key) => {
     switch (key) {
       case "A":
       case "B":
       case "start":
+        sounds.selectSound();
         props.onDone();
         break;
     }
