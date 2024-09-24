@@ -1,4 +1,6 @@
-import { useSpeaker } from "@/cartridge-react";
+"use client";
+
+import { Speaker, useAudio } from "@/cartridge-react";
 import { useMemo } from "react";
 import { useGetSettings } from "./Settings";
 
@@ -11,6 +13,7 @@ type TetrisSpeaker = {
   gameOverSound: Play;
   selectSound: Play;
   cursorSound: Play;
+  startSound: Play;
 };
 
 const Noop = () => {};
@@ -22,31 +25,41 @@ const SilentSpeaker: TetrisSpeaker = {
   gameOverSound: Noop,
   selectSound: Noop,
   cursorSound: Noop,
+  startSound: Noop,
 };
 
 function useTetrisSpeaker() {
-  const speaker = useSpeaker();
+  const audio = useAudio();
   const tetrisSpeaker = useMemo(() => {
-    const { playSquare, playOscillator } = speaker;
+    const playOscillator: Speaker["playOscillator"] = (
+      type,
+      frequency,
+      duration,
+    ) => audio?.playOscillator(type, frequency, duration);
+
     const sounds = {
       lineClearSound() {
-        playSquare(800, 0.1);
-        setTimeout(() => playSquare(1000, 0.1), 100);
+        playOscillator("square", 800, 0.1);
+        setTimeout(() => playOscillator("square", 1000, 0.1), 100);
         setTimeout(() => sounds.landSound(), 600);
       },
       gameOverSound() {
-        playSquare(300, 0.3);
-        setTimeout(() => playSquare(200, 0.3), 200);
-        setTimeout(() => playSquare(100, 0.3), 600);
+        playOscillator("square", 300, 0.3);
+        setTimeout(() => playOscillator("square", 200, 0.3), 200);
+        setTimeout(() => playOscillator("square", 100, 0.3), 600);
       },
       cursorSound() {
-        playSquare(800, 0.05);
+        playOscillator("square", 800, 0.05);
+      },
+      startSound() {
+        playOscillator("triangle", 880, 0.3);
+        setTimeout(() => playOscillator("triangle", 1760, 0.9), 100);
       },
       moveSound() {
-        playSquare(400, 0.05);
+        playOscillator("square", 400, 0.05);
       },
       rotateSound() {
-        playSquare(600, 0.05);
+        playOscillator("square", 600, 0.05);
       },
       landSound() {
         playOscillator("square", 40, 0.5);
@@ -54,11 +67,11 @@ function useTetrisSpeaker() {
         playOscillator("sawtooth", 50, 0.8);
       },
       selectSound() {
-        playSquare(1000, 0.1);
+        playOscillator("square", 1000, 0.1);
       },
     };
     return sounds;
-  }, [speaker]);
+  }, [audio]);
 
   return tetrisSpeaker;
 }

@@ -38,7 +38,7 @@ const ScreenStateFactory = {
 
 export const TetrisScreens: CartridgeComponent = () => {
   const [screen, setScreen] = useState<ScreenState>(() =>
-    ScreenStateFactory.menu(),
+    ScreenStateFactory.start(),
   );
   const scoreStore = useScoreStore();
 

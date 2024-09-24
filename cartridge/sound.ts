@@ -24,11 +24,9 @@ export function createSpeaker() {
     oscillator.stop(audioCtx.currentTime + duration);
   };
 
-  const playSquare = (frequency: number, duration: number) =>
-    playOscillator("square", frequency, duration);
-
   return {
     playOscillator,
-    playSquare,
   };
 }
+
+export type Speaker = ReturnType<typeof createSpeaker>;

@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useSounds } from "../Sounds";
 
 const ANIMATIONS = `
 @keyframes appear {
@@ -11,7 +12,7 @@ const ANIMATIONS = `
 }
 @keyframes slideDown {
   from{
-    transform: translateY(-200px);
+    transform: translateY(-170px);
   }
   100% {
     transform: translateY(0);
@@ -21,12 +22,15 @@ const ANIMATIONS = `
 
 export function StartScreen(props: { onStart: () => unknown }) {
   const { onStart } = props;
+  const sounds = useSounds();
   useEffect(() => {
-    let timer = setTimeout(() => onStart(), 6000);
+    let startTimer = setTimeout(() => onStart(), 7000);
+    let soundTimer = setTimeout(() => sounds.startSound(), 5000);
     return () => {
-      clearTimeout(timer);
+      clearTimeout(startTimer);
+      clearTimeout(soundTimer);
     };
-  }, [onStart]);
+  }, [onStart, sounds]);
 
   return (
     <>
