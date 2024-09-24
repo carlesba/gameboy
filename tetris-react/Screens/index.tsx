@@ -19,7 +19,7 @@ type ScreenState =
   | { type: "credits" }
   | { type: "howto" }
   | { type: "settings" }
-  | { type: "leaderboard"; points: number }
+  | { type: "leaderboard"; scored: boolean; points: number }
   | { type: "game"; level: number };
 
 const ScreenStateFactory = {
@@ -29,8 +29,9 @@ const ScreenStateFactory = {
   credits: (): ScreenState => ({ type: "credits" }),
   howToPlay: (): ScreenState => ({ type: "howto" }),
   settings: (): ScreenState => ({ type: "settings" }),
-  leaderboard: (points: number): ScreenState => ({
+  leaderboard: (scored: boolean, points: number): ScreenState => ({
     type: "leaderboard",
+    scored,
     points,
   }),
   game: (level: number): ScreenState => ({ type: "game", level }),
@@ -65,7 +66,7 @@ export const TetrisScreens: CartridgeComponent = () => {
                 setScreen(ScreenStateFactory.howToPlay());
                 break;
               case "leaderboard":
-                setScreen(ScreenStateFactory.leaderboard(0));
+                setScreen(ScreenStateFactory.leaderboard(false, 0));
                 break;
               case "settings":
                 setScreen(ScreenStateFactory.settings());
@@ -86,6 +87,7 @@ export const TetrisScreens: CartridgeComponent = () => {
         <LeaderboardScreen
           points={screen.points}
           scores={scoreStore.rankings()}
+          mode={screen.scored ? "edit" : "view"}
           onSubmitScore={(event) => {
             scoreStore.submit(event.name, event.points);
           }}
@@ -111,7 +113,7 @@ export const TetrisScreens: CartridgeComponent = () => {
           initialLevel={screen.level}
           onGameOver={(event) => {
             if (scoreStore.qualifyingScore(event.score)) {
-              setScreen(ScreenStateFactory.leaderboard(event.score));
+              setScreen(ScreenStateFactory.leaderboard(true, event.score));
             } else {
               setScreen(ScreenStateFactory.menu());
             }

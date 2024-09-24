@@ -30,19 +30,20 @@ function ScoreLine(props: {
 
 export function LeaderboardScreen(props: {
   points: number;
+  mode: "edit" | "view";
   scores: Score[];
   onSubmitScore: (event: Score) => unknown;
   onFinish: () => unknown;
 }) {
   const [name, setName] = useState("");
-  const [editing, setEditing] = useState(true);
+  const [editing, setEditing] = useState(() => props.mode === "edit");
 
   const ranking = useMemo(() => {
     type EditableScore =
       | { type: "score"; score: Score }
       | { type: "edit" | "empty" };
     const ranking: EditableScore[] = [];
-    let currentScoreAdded = false;
+    let currentScoreAdded = props.mode === "view" ? true : false;
 
     Array.from({ length: 10 }, (_, i) => i).forEach((index) => {
       const score = props.scores[index];
@@ -62,7 +63,7 @@ export function LeaderboardScreen(props: {
       ranking.push({ type: "score", score });
     });
     return ranking.slice(0, 10);
-  }, [props.points, name, props.scores]);
+  }, [props.points, name, props.scores, props.mode]);
 
   useControlEvents(() => {
     if (editing) return;
