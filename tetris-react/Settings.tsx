@@ -5,13 +5,12 @@ import { createContext, useCallback, useContext, useState } from "react";
 
 type Settings = {
   sound: boolean;
-  music: boolean;
 };
 
 const SettingsContext = createContext<Settings>({
   sound: false,
-  music: false,
 });
+const DEFAULT_SETTINGS: Settings = { sound: false };
 
 const SettingsDispatchContext = createContext<React.Dispatch<Settings>>(
   (_v: Settings) => {},
@@ -28,7 +27,7 @@ const settingsFromStorage = (storageValue: string | null): Settings => {
     }
     return parsed;
   } catch {
-    return { sound: true, music: true };
+    return DEFAULT_SETTINGS;
   }
 };
 
