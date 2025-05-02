@@ -1,5 +1,5 @@
 import { ControlEvents } from "@/cartridge";
-import { CSSProperties, ReactNode } from "react";
+import { CSSProperties, MouseEventHandler, ReactNode } from "react";
 
 const LIGHT_SHADOW_COLOR = "rgba(248, 238, 247, 0.6)"; // #F8EEF7
 
@@ -18,6 +18,13 @@ const actionButton = (): CSSProperties => ({
   boxShadow: `-1px 1px 2px 0 #5C5758, inset -2px 3px 2px 0 var(--button-light-shadow)`,
 });
 
+const preventDefault =
+  (fn: () => unknown): MouseEventHandler<HTMLButtonElement> =>
+  (e) => {
+    e.preventDefault();
+    return fn();
+  };
+
 function ActionButton(props: {
   label: string;
   onAction: (e: ButtonEvent) => unknown;
@@ -25,9 +32,9 @@ function ActionButton(props: {
   return (
     <button
       style={actionButton()}
-      onMouseDown={() => props.onAction({ type: "mousedown" })}
-      onMouseUp={() => props.onAction({ type: "mouseup" })}
-      onClick={() => props.onAction({ type: "click" })}
+      onMouseDown={preventDefault(() => props.onAction({ type: "mousedown" }))}
+      onMouseUp={preventDefault(() => props.onAction({ type: "mouseup" }))}
+      onClick={preventDefault(() => props.onAction({ type: "click" }))}
     >
       {props.label}
     </button>
@@ -73,9 +80,11 @@ function StartButton(props: {
     <div style={startButtonTilt()}>
       <button
         style={startButton()}
-        onMouseDown={() => props.onAction({ type: "mousedown" })}
-        onMouseUp={() => props.onAction({ type: "mouseup" })}
-        onClick={() => props.onAction({ type: "click" })}
+        onMouseDown={preventDefault(() =>
+          props.onAction({ type: "mousedown" }),
+        )}
+        onMouseUp={preventDefault(() => props.onAction({ type: "mouseup" }))}
+        onClick={preventDefault(() => props.onAction({ type: "click" }))}
       >
         {props.label}
       </button>
