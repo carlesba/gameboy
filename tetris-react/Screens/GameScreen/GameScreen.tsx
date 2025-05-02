@@ -9,7 +9,7 @@ import { Tetris as TetrisGame } from "@/tetris";
 import { BLOCK_SIZE } from "./Block";
 import { Layout } from "./Layout";
 import { Piece } from "./Piece";
-import { useOnKeyPress } from "@/cartridge-react";
+import { useOnAutoKeyPress, useOnKeyPress } from "@/cartridge-react";
 import { useSounds } from "@/tetris-react/Sounds";
 
 const styles = {
@@ -66,22 +66,32 @@ export function GameScreen(props: {
     [tetris, sounds],
   );
 
-  useOnKeyPress((event) => {
+  useOnKeyPress((button) => {
     if (gameOver) {
       return props.onGameOver({ score });
     }
-    switch (event) {
+    switch (button) {
       case "A":
         sounds.rotateSound();
         return tetris.action("rotateA");
       case "B":
         sounds.rotateSound();
         return tetris.action("rotateB");
+      case "down":
+        return tetris.action("down");
       case "start":
       case "up":
-        return;
       default:
-        return tetris.action(event);
+        return;
+    }
+  });
+  useOnAutoKeyPress((button) => {
+    switch (button) {
+      case "left":
+      case "right":
+        return tetris.action(button);
+      default:
+        return;
     }
   });
 

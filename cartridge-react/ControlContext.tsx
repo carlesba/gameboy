@@ -58,19 +58,19 @@ export function useOnAutoKeyPress(
 ) {
   const controlEvents = useControlContext();
 
-  const delay = useRef<number | null>(null);
-  const interval = useRef<number | null>(null);
+  const delay = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const interval = useRef<ReturnType<typeof setInterval> | null | null>(null);
 
   useEffect(() => {
-    function setTimers(fn: () => unknown) {
-      fn();
+    function setTimers(button: ControlEvents["button"]) {
+      fn(button);
       clearTimers();
-      setTimeout(() => {
-        fn();
-        setInterval(fn, REPEAT_TIME);
+      delay.current = setTimeout(() => {
+        fn(button);
+        interval.current = setInterval(() => fn(button), REPEAT_TIME);
       }, DELAY_TIME);
     }
-    const clearTimers = () => {
+    function clearTimers() {
       if (delay.current) {
         clearTimeout(delay.current);
         delay.current = null;
@@ -79,17 +79,19 @@ export function useOnAutoKeyPress(
         clearInterval(interval.current);
         interval.current = null;
       }
-    };
+    }
     return controlEvents.subscribe((e) => {
+      console.log("...", e);
       switch (e.action) {
         case "mousedown":
         case "keydown": {
-          const eventButton = e.button;
-          setTimers(() => fn(eventButton));
+          setTimers(e.button);
+          return;
         }
         case "mouseup":
         case "keyup": {
           clearTimers();
+          return;
         }
         default: {
         }
