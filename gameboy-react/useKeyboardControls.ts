@@ -1,7 +1,7 @@
 import { ControlEvents } from "@/cartridge";
 import { useEffect } from "react";
 
-type KeyboardEventType = "keydown" | "keyup" | "keypress";
+type KeyboardEventType = "keydown" | "keyup";
 
 function useWindowKeyEvents(
   types: KeyboardEventType[],
@@ -50,7 +50,7 @@ function buttonFromKey(e: KeyboardEvent): ControlEvents["button"] | undefined {
   return undefined;
 }
 
-const events: KeyboardEventType[] = ["keydown", "keyup", "keypress"];
+const events: KeyboardEventType[] = ["keydown", "keyup"];
 export function useKeyboardControls(dispatch: (action: ControlEvents) => void) {
   useWindowKeyEvents(events, (e, eventType) => {
     const button = buttonFromKey(e);

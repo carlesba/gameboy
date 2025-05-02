@@ -1,6 +1,8 @@
 import { ControlEvents } from "@/cartridge";
 import { CSSProperties, ReactNode } from "react";
 
+type ButtonEvent = { type: "keydown" | "keyup" };
+
 const LIGHT_SHADOW_COLOR = "rgba(248, 238, 247, 0.6)"; // #F8EEF7
 
 const BUTTON_UNIT = 40;
@@ -36,7 +38,6 @@ function ActionButton(props: {
       style={actionButton()}
       onMouseDown={preventDefault(() => props.onAction({ type: "keydown" }))}
       onMouseUp={preventDefault(() => props.onAction({ type: "keyup" }))}
-      onClick={preventDefault(() => props.onAction({ type: "keypress" }))}
       onTouchStart={preventDefault(() => props.onAction({ type: "keydown" }))}
       onTouchEnd={preventDefault(() => props.onAction({ type: "keyup" }))}
     >
@@ -89,7 +90,6 @@ function StartButton(props: {
         style={startButton()}
         onMouseDown={preventDefault(() => props.onAction({ type: "keydown" }))}
         onMouseUp={preventDefault(() => props.onAction({ type: "keyup" }))}
-        onClick={preventDefault(() => props.onAction({ type: "keypress" }))}
         onTouchStart={preventDefault(() => props.onAction({ type: "keydown" }))}
         onTouchEnd={preventDefault(() => props.onAction({ type: "keyup" }))}
       >
@@ -107,9 +107,7 @@ const PAD_WIDTH = BUTTON_UNIT;
 const PAD_LENGTH = BUTTON_UNIT * 1.3;
 const PAD_RADIUS = "10px";
 
-const padButton = (
-  side: "up" | "left" | "right" | "down",
-): CSSProperties => ({
+const padButton = (side: "up" | "left" | "right" | "down"): CSSProperties => ({
   fontSize: "0",
   borderStyle: "solid",
   borderWidth: "1px",
@@ -159,8 +157,6 @@ const padButton = (
   }),
 });
 
-type ButtonEvent = { type: "keydown" | "keyup" | "keypress" };
-
 function PadButton(props: {
   label: "left" | "right" | "down" | "up";
   onAction: (event: ButtonEvent) => unknown;
@@ -170,7 +166,6 @@ function PadButton(props: {
       style={padButton(props.label)}
       onMouseDown={preventDefault(() => props.onAction({ type: "keydown" }))}
       onMouseUp={preventDefault(() => props.onAction({ type: "keyup" }))}
-      onClick={preventDefault(() => props.onAction({ type: "keypress" }))}
       onTouchStart={preventDefault(() => props.onAction({ type: "keydown" }))}
       onTouchEnd={preventDefault(() => props.onAction({ type: "keyup" }))}
     >

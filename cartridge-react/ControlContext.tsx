@@ -40,7 +40,7 @@ export function useOnKeyPress(fn: (button: ControlEvents["button"]) => void) {
     () =>
       controlEvents.subscribe((e) => {
         switch (e.action) {
-          case "keypress": {
+          case "keydown": {
             fn(e.button);
           }
           default:

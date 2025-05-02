@@ -12,7 +12,7 @@ type ControlButton =
 
 export type ControlEvents = {
   button: ControlButton;
-  action: "keydown" | "keyup" | "keypress";
+  action: "keydown" | "keyup";
 };
 
 export class ControlEventsObservable extends Observable<ControlEvents> {}
