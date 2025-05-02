@@ -40,8 +40,7 @@ export function useOnKeyPress(fn: (button: ControlEvents["button"]) => void) {
     () =>
       controlEvents.subscribe((e) => {
         switch (e.action) {
-          case "mousedown":
-          case "keydown": {
+          case "keypress": {
             fn(e.button);
           }
           default:
@@ -83,12 +82,10 @@ export function useOnAutoKeyPress(
     return controlEvents.subscribe((e) => {
       console.log("...", e);
       switch (e.action) {
-        case "mousedown":
         case "keydown": {
           setTimers(e.button);
           return;
         }
-        case "mouseup":
         case "keyup": {
           clearTimers();
           return;

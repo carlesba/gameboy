@@ -1,5 +1,5 @@
 import { ControlEvents } from "@/cartridge";
-import { CSSProperties, MouseEventHandler, ReactNode } from "react";
+import { CSSProperties, ReactNode } from "react";
 
 const LIGHT_SHADOW_COLOR = "rgba(248, 238, 247, 0.6)"; // #F8EEF7
 
@@ -22,8 +22,7 @@ const actionButton = (): CSSProperties => ({
 });
 
 const preventDefault =
-  (fn: () => unknown): MouseEventHandler<HTMLButtonElement> =>
-  (e) => {
+  (fn: () => unknown) => (e: { preventDefault: () => unknown }) => {
     e.preventDefault();
     return fn();
   };
@@ -35,9 +34,11 @@ function ActionButton(props: {
   return (
     <button
       style={actionButton()}
-      onMouseDown={preventDefault(() => props.onAction({ type: "mousedown" }))}
-      onMouseUp={preventDefault(() => props.onAction({ type: "mouseup" }))}
-      onClick={preventDefault(() => props.onAction({ type: "click" }))}
+      onMouseDown={preventDefault(() => props.onAction({ type: "keydown" }))}
+      onMouseUp={preventDefault(() => props.onAction({ type: "keyup" }))}
+      onClick={preventDefault(() => props.onAction({ type: "keypress" }))}
+      onTouchStart={preventDefault(() => props.onAction({ type: "keydown" }))}
+      onTouchEnd={preventDefault(() => props.onAction({ type: "keyup" }))}
     >
       {props.label}
     </button>
@@ -86,11 +87,11 @@ function StartButton(props: {
     <div style={startButtonTilt()}>
       <button
         style={startButton()}
-        onMouseDown={preventDefault(() =>
-          props.onAction({ type: "mousedown" }),
-        )}
-        onMouseUp={preventDefault(() => props.onAction({ type: "mouseup" }))}
-        onClick={preventDefault(() => props.onAction({ type: "click" }))}
+        onMouseDown={preventDefault(() => props.onAction({ type: "keydown" }))}
+        onMouseUp={preventDefault(() => props.onAction({ type: "keyup" }))}
+        onClick={preventDefault(() => props.onAction({ type: "keypress" }))}
+        onTouchStart={preventDefault(() => props.onAction({ type: "keydown" }))}
+        onTouchEnd={preventDefault(() => props.onAction({ type: "keyup" }))}
       >
         {props.label}
       </button>
@@ -106,7 +107,9 @@ const PAD_WIDTH = BUTTON_UNIT;
 const PAD_LENGTH = BUTTON_UNIT * 1.3;
 const PAD_RADIUS = "10px";
 
-const padButton = (side: "up" | "left" | "right" | "down"): CSSProperties => ({
+const padButton = (
+  side: "up" | "left" | "right" | "down",
+): CSSProperties => ({
   fontSize: "0",
   borderStyle: "solid",
   borderWidth: "1px",
@@ -156,7 +159,7 @@ const padButton = (side: "up" | "left" | "right" | "down"): CSSProperties => ({
   }),
 });
 
-type ButtonEvent = { type: "mousedown" | "mouseup" | "click" };
+type ButtonEvent = { type: "keydown" | "keyup" | "keypress" };
 
 function PadButton(props: {
   label: "left" | "right" | "down" | "up";
@@ -165,9 +168,11 @@ function PadButton(props: {
   return (
     <button
       style={padButton(props.label)}
-      onMouseDown={() => props.onAction({ type: "mousedown" })}
-      onMouseUp={() => props.onAction({ type: "mouseup" })}
-      onClick={() => props.onAction({ type: "click" })}
+      onMouseDown={preventDefault(() => props.onAction({ type: "keydown" }))}
+      onMouseUp={preventDefault(() => props.onAction({ type: "keyup" }))}
+      onClick={preventDefault(() => props.onAction({ type: "keypress" }))}
+      onTouchStart={preventDefault(() => props.onAction({ type: "keydown" }))}
+      onTouchEnd={preventDefault(() => props.onAction({ type: "keyup" }))}
     >
       {props.label}
     </button>
