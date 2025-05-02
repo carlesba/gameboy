@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSounds } from "../Sounds";
+import { useOnKeyPress } from "@/cartridge-react";
 
 const ANIMATIONS = `
 @keyframes appear {
@@ -31,6 +32,12 @@ export function StartScreen(props: { onStart: () => unknown }) {
       clearTimeout(soundTimer);
     };
   }, [onStart, sounds]);
+
+  useOnKeyPress((button) => {
+    if (button === "start") {
+      onStart();
+    }
+  });
 
   return (
     <>
