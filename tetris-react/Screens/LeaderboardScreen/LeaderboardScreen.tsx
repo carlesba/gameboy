@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useControlEvents } from "@/cartridge-react";
+import { useOnKeyPress } from "@/cartridge-react";
 import { InputName, ViewName } from "./Name";
 import { Score } from "@/tetris-react/Scores";
 
@@ -43,13 +43,24 @@ export function LeaderboardScreen(props: {
       | { type: "score"; score: Score }
       | { type: "edit" | "empty" };
     const ranking: EditableScore[] = [];
-    let currentScoreAdded = props.mode === "view" ? true : false;
+    let currentScoreAdded = false;
+
+    const addCurrentScore = () => {
+      currentScoreAdded = true;
+      if (props.mode === "edit") {
+        ranking.push({ type: "edit" });
+      } else {
+        ranking.push({
+          type: "score",
+          score: { name, points: props.points },
+        });
+      }
+    };
 
     Array.from({ length: 10 }, (_, i) => i).forEach((index) => {
       const score = props.scores[index];
       if (!score && !currentScoreAdded) {
-        ranking.push({ type: "edit" });
-        currentScoreAdded = true;
+        addCurrentScore();
         return;
       }
       if (!score) {
@@ -57,15 +68,15 @@ export function LeaderboardScreen(props: {
         return;
       }
       if (props.points > score.points && !currentScoreAdded) {
-        ranking.push({ type: "score", score: { name, points: props.points } });
-        currentScoreAdded = true;
+        addCurrentScore();
+        return;
       }
       ranking.push({ type: "score", score });
     });
     return ranking.slice(0, 10);
   }, [props.points, name, props.scores, props.mode]);
 
-  useControlEvents(() => {
+  useOnKeyPress(() => {
     if (editing) return;
     props.onFinish();
   });

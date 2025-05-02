@@ -1,9 +1,9 @@
-import { useControlEvents } from "@/cartridge-react";
+import { useOnKeyPress } from "@/cartridge-react";
 import { useSounds } from "../Sounds";
 
 export function CreditsScreen(props: { onDone: () => unknown }) {
   const sounds = useSounds();
-  useControlEvents((key) => {
+  useOnKeyPress((key) => {
     switch (key) {
       case "A":
       case "B":

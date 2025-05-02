@@ -1,6 +1,6 @@
 import { Observable } from "@/data-structures/Observable";
 
-export type ControlEvents =
+type ControlButton =
   | "A"
   | "B"
   | "left"
@@ -9,5 +9,10 @@ export type ControlEvents =
   | "down"
   | "pause"
   | "start";
+
+export type ControlEvents = {
+  button: ControlButton;
+  action: "mousedown" | "mouseup" | "click" | "keydown" | "keyup" | "keypress";
+};
 
 export class ControlEventsObservable extends Observable<ControlEvents> {}

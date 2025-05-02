@@ -1,4 +1,4 @@
-import { useControlEvents } from "@/cartridge-react";
+import { useOnKeyPress } from "@/cartridge-react";
 import { useState } from "react";
 import { useSounds } from "../Sounds";
 import { useGetSettings, useSetSettings } from "../Settings";
@@ -31,7 +31,7 @@ export function SettingsScreen(props: { onBack: () => unknown }) {
   const soundLabel = settings.sound ? "Sound: On" : "Sound: Off";
 
   const sounds = useSounds();
-  useControlEvents((key) => {
+  useOnKeyPress((key) => {
     const totalOptions = SettingsList.length + 1;
     switch (key) {
       case "down":

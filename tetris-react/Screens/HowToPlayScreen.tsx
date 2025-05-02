@@ -1,4 +1,4 @@
-import { useControlEvents } from "@/cartridge-react";
+import { useOnKeyPress } from "@/cartridge-react";
 import { useSounds } from "../Sounds";
 
 const Section = (props: { children: React.ReactNode }) => (
@@ -14,7 +14,7 @@ const Section = (props: { children: React.ReactNode }) => (
 );
 export function HowToPlayScreen(props: { onDone: () => unknown }) {
   const sounds = useSounds();
-  useControlEvents((key) => {
+  useOnKeyPress((key) => {
     switch (key) {
       case "A":
       case "B":

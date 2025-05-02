@@ -18,9 +18,17 @@ const actionButton = (): CSSProperties => ({
   boxShadow: `-1px 1px 2px 0 #5C5758, inset -2px 3px 2px 0 var(--button-light-shadow)`,
 });
 
-function ActionButton(props: { label: string; onClick?: () => unknown }) {
+function ActionButton(props: {
+  label: string;
+  onAction: (e: ButtonEvent) => unknown;
+}) {
   return (
-    <button style={actionButton()} onClick={props.onClick}>
+    <button
+      style={actionButton()}
+      onMouseDown={() => props.onAction({ type: "mousedown" })}
+      onMouseUp={() => props.onAction({ type: "mouseup" })}
+      onClick={() => props.onAction({ type: "click" })}
+    >
       {props.label}
     </button>
   );
@@ -57,10 +65,18 @@ const startButtonLabel = (): CSSProperties => ({
   opacity: 0.9,
   color: "#4B4B4B",
 });
-function StartButton(props: { label: string; onClick?: () => unknown }) {
+function StartButton(props: {
+  label: string;
+  onAction: (e: ButtonEvent) => unknown;
+}) {
   return (
     <div style={startButtonTilt()}>
-      <button style={startButton()} onClick={props.onClick}>
+      <button
+        style={startButton()}
+        onMouseDown={() => props.onAction({ type: "mousedown" })}
+        onMouseUp={() => props.onAction({ type: "mouseup" })}
+        onClick={() => props.onAction({ type: "click" })}
+      >
         {props.label}
       </button>
       <span style={startButtonLabel()}>{props.label}</span>
@@ -122,12 +138,19 @@ const padButton = (side: "up" | "left" | "right" | "down"): CSSProperties => ({
   }),
 });
 
+type ButtonEvent = { type: "mousedown" | "mouseup" | "click" };
+
 function PadButton(props: {
   label: "left" | "right" | "down" | "up";
-  onClick?: () => unknown;
+  onAction: (event: ButtonEvent) => unknown;
 }) {
   return (
-    <button style={padButton(props.label)} onClick={props.onClick}>
+    <button
+      style={padButton(props.label)}
+      onMouseDown={() => props.onAction({ type: "mousedown" })}
+      onMouseUp={() => props.onAction({ type: "mouseup" })}
+      onClick={() => props.onAction({ type: "click" })}
+    >
       {props.label}
     </button>
   );
@@ -204,16 +227,18 @@ function ControlLayout(props: {
   );
 }
 export function Controls(props: { onAction: (action: ControlEvents) => void }) {
-  const dispatch = props.onAction;
+  const dispatch = (button: ControlEvents["button"]) => (e: ButtonEvent) =>
+    props.onAction({ button, action: e.type });
+
   return (
     <ControlLayout
-      up={<PadButton label="up" onClick={() => dispatch("up")} />}
-      down={<PadButton label="down" onClick={() => dispatch("down")} />}
-      left={<PadButton label="left" onClick={() => dispatch("left")} />}
-      right={<PadButton label="right" onClick={() => dispatch("right")} />}
-      a={<ActionButton label="A" onClick={() => dispatch("A")} />}
-      b={<ActionButton label="B" onClick={() => dispatch("B")} />}
-      start={<StartButton label="start" onClick={() => dispatch("start")} />}
+      up={<PadButton label="up" onAction={dispatch("up")} />}
+      down={<PadButton label="down" onAction={dispatch("down")} />}
+      left={<PadButton label="left" onAction={dispatch("left")} />}
+      right={<PadButton label="right" onAction={dispatch("right")} />}
+      a={<ActionButton label="A" onAction={dispatch("A")} />}
+      b={<ActionButton label="B" onAction={dispatch("B")} />}
+      start={<StartButton label="start" onAction={dispatch("start")} />}
     />
   );
 }

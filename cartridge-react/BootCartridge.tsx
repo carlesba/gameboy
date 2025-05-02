@@ -1,9 +1,7 @@
-import { useControlEvents } from "./ControlContext";
+import { useOnControlEvent } from "./ControlContext";
 import { CartridgeComponent } from "./types";
 
 export const BootCartridge: CartridgeComponent = (props) => {
-  useControlEvents(() => {
-    props.onClose();
-  });
+  useOnControlEvent(props.onClose);
   return <p>Press any key to start</p>;
 };

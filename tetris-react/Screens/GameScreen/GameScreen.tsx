@@ -9,7 +9,7 @@ import { Tetris as TetrisGame } from "@/tetris";
 import { BLOCK_SIZE } from "./Block";
 import { Layout } from "./Layout";
 import { Piece } from "./Piece";
-import { useControlEvents } from "@/cartridge-react";
+import { useOnKeyPress } from "@/cartridge-react";
 import { useSounds } from "@/tetris-react/Sounds";
 
 const styles = {
@@ -66,7 +66,7 @@ export function GameScreen(props: {
     [tetris, sounds],
   );
 
-  useControlEvents((event) => {
+  useOnKeyPress((event) => {
     if (gameOver) {
       return props.onGameOver({ score });
     }

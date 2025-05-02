@@ -1,4 +1,4 @@
-import { useControlEvents } from "@/cartridge-react";
+import { useOnKeyPress } from "@/cartridge-react";
 import { useState } from "react";
 import { useSounds } from "../Sounds";
 
@@ -45,7 +45,7 @@ export function MenuScreen(props: {
   const option = OPTIONS[index] ?? "quickPlay";
 
   const sounds = useSounds();
-  useControlEvents((key) => {
+  useOnKeyPress((key) => {
     switch (key) {
       case "down":
         sounds.cursorSound();

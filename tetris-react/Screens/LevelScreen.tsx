@@ -1,4 +1,4 @@
-import { useControlEvents } from "@/cartridge-react";
+import { useOnKeyPress } from "@/cartridge-react";
 import { useState } from "react";
 import { useSounds } from "../Sounds";
 
@@ -26,7 +26,7 @@ export function LevelScreen(props: {
   const [level, setLevel] = useState(0);
 
   const sounds = useSounds();
-  useControlEvents((key) => {
+  useOnKeyPress((key) => {
     const totalOptions = LEVELS.length + 1;
     switch (key) {
       case "down":

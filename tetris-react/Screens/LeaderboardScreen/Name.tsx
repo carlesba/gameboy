@@ -1,4 +1,4 @@
-import { useControlEvents } from "@/cartridge-react";
+import { useOnKeyPress } from "@/cartridge-react";
 import { ReactNode, useState } from "react";
 
 const CHARACTERS = "_ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -32,7 +32,7 @@ function InsertChar(props: { char: string; onSubmit: (event: Event) => void }) {
     );
 
   const char = CHARACTERS[charIndex];
-  useControlEvents((key) => {
+  useOnKeyPress((key) => {
     switch (key) {
       case "up": {
         nextLetter();
