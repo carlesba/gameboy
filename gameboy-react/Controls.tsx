@@ -16,6 +16,9 @@ const actionButton = (): CSSProperties => ({
   fontWeight: "bold",
   fontSize: "1.2rem",
   boxShadow: `-1px 1px 2px 0 #5C5758, inset -2px 3px 2px 0 var(--button-light-shadow)`,
+  userSelect: "none",
+  WebkitUserSelect: "none",
+  WebkitTouchCallout: "none",
 });
 
 const preventDefault =
@@ -52,6 +55,9 @@ const startButton = (): CSSProperties => ({
   fontWeight: "bold",
   fontSize: "1.2rem",
   boxShadow: `-1px 1px 1px 0 #5C5758, inset -2px 3px 1px 0 var(--button-light-shadow)`,
+  userSelect: "none",
+  WebkitUserSelect: "none",
+  WebkitTouchCallout: "none",
 });
 
 const startButtonTilt = (): CSSProperties => ({
@@ -107,6 +113,9 @@ const padButton = (side: "up" | "left" | "right" | "down"): CSSProperties => ({
   borderColor: "#5E554F",
   background: "var(--pad-color)",
   fontWeight: "bold",
+  userSelect: "none",
+  WebkitUserSelect: "none",
+  WebkitTouchCallout: "none",
   ...readSide<CSSProperties>(side, {
     left: {
       width: `${PAD_LENGTH}px`,
