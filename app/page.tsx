@@ -6,7 +6,16 @@ const GAMES = [{ name: "Tetris", Cartridge: TetrisCartridge }];
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main
+      style={{
+        display: "flex",
+        minHeight: "100vh",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "6rem",
+      }}
+    >
       <GameBoy games={GAMES} />
     </main>
   );
