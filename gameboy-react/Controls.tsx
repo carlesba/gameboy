@@ -180,13 +180,15 @@ const control = (): CSSProperties => ({
   gap: "10px",
   gridTemplateAreas: `
   ". . . . . . . . . ."
-  "p p p p . . . . . ."
-  "p p p p . . . . a ."
-  "p p p p . . b . a ."
-  "p p p p . . b . a ."
-  "p p p p . . b . . ."
-  "p p p p . . . . . ."
-  ". . . . . s . . . ."`,
+  "p p p . . . . . . ."
+  "p p p . . . . . a a"
+  "p p p . . b b . a a"
+  "p p p . . b b . a a"
+  "p p p . . b b . . ."
+  "p p p . . . . . . ."
+  ". . . . . . . . . ."
+  ". . . . . . . . . ."
+  ". . . s s s . . . ."`,
   justifyContent: "center",
   alignItems: "center",
 });
