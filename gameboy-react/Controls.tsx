@@ -5,7 +5,7 @@ type ButtonEvent = { type: "keydown" | "keyup" };
 
 const LIGHT_SHADOW_COLOR = "rgba(248, 238, 247, 0.6)"; // #F8EEF7
 
-const BUTTON_UNIT = 40;
+const BUTTON_UNIT = 50;
 const BUTTON_SIZE = BUTTON_UNIT * 1.4;
 
 const actionButton = (): CSSProperties => ({
