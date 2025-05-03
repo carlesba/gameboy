@@ -13,7 +13,7 @@ export default function Home() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "6rem",
+        padding: "1rem 6rem",
       }}
     >
       <GameBoy games={GAMES} />
